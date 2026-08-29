@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -85,6 +86,31 @@ def admin_panel_view(request):
 
         initials = (u.first_name[:1] + u.last_name[:1]).upper() if u.first_name and u.last_name else u.username[:2].upper()
 
+        clean_dict = {
+            'id': u.id,
+            'username': u.username,
+            'full_name': u.get_full_name() or u.username,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'email': u.email or '',
+            'is_active': u.is_active,
+            'is_approved': is_approved,
+            'is_pending_approval': is_pending_approval,
+            'needs_dept': needs_dept,
+            'no_team': has_no_team,
+            'is_pending': is_pending,
+            'status': profile.status if profile else ('ACTIVE' if u.is_active else 'PENDING_APPROVAL'),
+            'team_id': team.id if team else '',
+            'team_name': team.name if team else 'No Team',
+            'department_id': department.id if department else '',
+            'department_name': department.name if department else 'Unassigned',
+            'role_title': role_title,
+            'role_code': role_code,
+            'reporting_to_id': reporting_to.id if reporting_to else '',
+            'reporting_to_name': (reporting_to.get_full_name() or reporting_to.username) if reporting_to else 'None',
+            'is_aman': is_aman,
+        }
+
         user_data = {
             'id': u.id,
             'user': u,
@@ -117,7 +143,8 @@ def admin_panel_view(request):
             'needs_dept': needs_dept,
             'no_team': has_no_team,
             'is_pending': is_pending,
-            'date_joined': u.date_joined
+            'date_joined': u.date_joined,
+            'json_str': json.dumps(clean_dict)
         }
         user_list.append(user_data)
         if is_pending_approval:

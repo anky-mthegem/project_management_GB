@@ -245,7 +245,7 @@
                             </button>
                         </form>
 
-                        <button type="button" @click="openApprove({{ pu|escapejs }})"
+                        <button type="button" @click="openApprove({{ pu.json_str }})"
                                 class="py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1">
                             <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
                             <span>Configure</span>
@@ -347,7 +347,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
                         {% for u in team_users %}
-                        <tr x-show="matchesFilter({{ u|escapejs }})"
+                        <tr x-show="matchesFilter({{ u.json_str }})"
                             class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors {% if u.is_pending_approval %}bg-amber-50/20 dark:bg-amber-950/10{% endif %}">
                             
                             <!-- User Name & Email -->
@@ -506,7 +506,7 @@
                                             </button>
                                         </form>
 
-                                        <button @click="openApprove({{ u|escapejs }})"
+                                        <button @click="openApprove({{ u.json_str }})"
                                                 class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-white text-[11px] font-bold shadow-xs transition-colors flex items-center gap-1"
                                                 title="Approve & Assign Team/Department">
                                             <i data-lucide="settings" class="w-3.5 h-3.5"></i>
@@ -514,7 +514,7 @@
                                         </button>
                                         {% else %}
                                         <!-- If already approved/active: Show Edit and Toggle Actions -->
-                                        <button @click="openEdit({{ u|escapejs }})"
+                                        <button @click="openEdit({{ u.json_str }})"
                                                 class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
                                                 title="Edit Governance & Details">
                                             <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
@@ -534,7 +534,7 @@
 
                                         <!-- Delete Account (Disabled for aman) -->
                                         {% if not u.is_aman %}
-                                        <button @click="openDelete({{ u|escapejs }})"
+                                        <button @click="openDelete({{ u.json_str }})"
                                                 class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 transition-colors"
                                                 title="Remove User">
                                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
