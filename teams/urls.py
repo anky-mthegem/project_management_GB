@@ -21,6 +21,9 @@ urlpatterns = [
     path('departments/create/', views.department_create_view, name='department_create'),
     path('departments/<int:pk>/delete/', views.department_delete_view, name='department_delete'),
     
+    # Quick Seed Demo Data
+    path('seed-demo/', views.seed_demo_teams_view, name='seed_demo'),
+    
     # JSON API Endpoints
     path('api/hierarchy/', api_views.team_hierarchy_api, name='api_team_hierarchy'),
     path('api/org-chart/', api_views.org_chart_api, name='api_org_chart'),

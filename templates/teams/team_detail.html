@@ -3,7 +3,7 @@
 {% block title %}{{ team.name }} - Team Details - Milestone Management{% endblock %}
 
 {% block content %}
-<div class="flex-1 flex flex-col overflow-y-auto bg-slate-950 text-slate-200"
+<div class="flex-1 flex flex-col overflow-y-auto bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200"
      x-data="{
          showAddMemberModal: false,
          showDeleteModal: false,
@@ -11,21 +11,21 @@
      }">
 
     <!-- Top Ribbon / Breadcrumbs -->
-    <div class="bg-slate-900 border-b border-slate-800 px-6 py-4">
+    <div class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div>
-                <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
-                    <a href="{% url 'teams:team_hierarchy' %}" class="hover:text-brand-400 flex items-center gap-1">
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    <a href="{% url 'teams:team_hierarchy' %}" class="hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1">
                         <i data-lucide="arrow-left" class="w-3 h-3"></i>
                         <span>Team Manager</span>
                     </a>
                     <span>/</span>
-                    <span class="text-slate-300 font-mono">{{ team.department.name|default:"General" }}</span>
+                    <span class="text-slate-700 dark:text-slate-300 font-mono">{{ team.department.name|default:"General" }}</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="w-4 h-4 rounded-full shadow-md" style="background-color: {{ team.color }};"></span>
-                    <h1 class="text-xl font-bold text-white tracking-tight">{{ team.name }}</h1>
-                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{{ team.name }}</h1>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                         {{ memberships.count }} Members
                     </span>
                 </div>
@@ -33,13 +33,13 @@
 
             <div class="flex items-center gap-2">
                 <a href="{% url 'teams:team_edit' pk=team.pk %}"
-                   class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5">
+                   class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
                     <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                     <span>Edit Team</span>
                 </a>
 
                 <button @click="showAddMemberModal = true"
-                        class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]">
+                        class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]">
                     <i data-lucide="user-plus" class="w-4 h-4"></i>
                     <span>Assign Member</span>
                 </button>
@@ -53,68 +53,68 @@
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
             <!-- Team Lead Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-lg flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-base font-bold text-white shadow-md">
                     {{ team.lead.first_name|first|default:team.lead.username|first|upper|default:"?" }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <span class="text-[10px] font-semibold uppercase text-brand-400 tracking-wider">Team Lead</span>
-                    <h3 class="text-sm font-bold text-white truncate">{{ team.lead.get_full_name|default:team.lead.username|default:"Unassigned Lead" }}</h3>
-                    <p class="text-xs text-slate-400 font-mono truncate">{{ team.lead.email|default:"No email recorded" }}</p>
+                    <span class="text-[10px] font-semibold uppercase text-brand-600 dark:text-brand-400 tracking-wider">Team Lead</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ team.lead.get_full_name|default:team.lead.username|default:"Unassigned Lead" }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">{{ team.lead.email|default:"No email recorded" }}</p>
                 </div>
             </div>
 
             <!-- Parent Team / Department -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-lg flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                     <i data-lucide="building" class="w-6 h-6"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <span class="text-[10px] font-semibold uppercase text-indigo-400 tracking-wider">Organization Unit</span>
-                    <h3 class="text-sm font-bold text-white truncate">{{ team.department.name|default:"Standalone Team" }}</h3>
-                    <p class="text-xs text-slate-400 truncate">
+                    <span class="text-[10px] font-semibold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Organization Unit</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ team.department.name|default:"Standalone Team" }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
                         {% if team.parent_team %}Parent Team: {{ team.parent_team.name }}{% else %}Root Level Team{% endif %}
                     </p>
                 </div>
             </div>
 
             <!-- Active Assigned Projects -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-lg flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                     <i data-lucide="folder-kanban" class="w-6 h-6"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <span class="text-[10px] font-semibold uppercase text-emerald-400 tracking-wider">Assigned Projects</span>
-                    <h3 class="text-sm font-bold text-white truncate">{{ assigned_projects.count }} Active Schedule(s)</h3>
-                    <p class="text-xs text-slate-400 truncate">{{ assigned_projects|slice:":2"|join:", "|default:"No active project links" }}</p>
+                    <span class="text-[10px] font-semibold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Assigned Projects</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ assigned_projects.count }} Active Schedule(s)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ assigned_projects|slice:":2"|join:", "|default:"No active project links" }}</p>
                 </div>
             </div>
         </div>
 
         <!-- Description Box if present -->
         {% if team.description %}
-        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 text-xs text-slate-300">
-            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Domain & Responsibilities</h4>
+        <div class="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 text-xs text-slate-700 dark:text-slate-300 shadow-sm">
+            <h4 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Domain & Responsibilities</h4>
             <p>{{ team.description }}</p>
         </div>
         {% endif %}
 
         <!-- Members Table -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl shadow-sm dark:shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                        <i data-lucide="users" class="w-4 h-4 text-brand-400"></i>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
                         Team Members & Direct Reporting Lines
                     </h3>
-                    <p class="text-xs text-slate-400">Contributors assigned to this team with specific operational roles.</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Contributors assigned to this team with specific operational roles.</p>
                 </div>
-                <span class="text-xs font-mono text-slate-400">{{ memberships.count }} Assigned</span>
+                <span class="text-xs font-mono text-slate-500 dark:text-slate-400">{{ memberships.count }} Assigned</span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-950/80 text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800 font-semibold">
+                <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                    <thead class="bg-slate-50 dark:bg-slate-950/80 text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold">
                         <tr>
                             <th class="px-6 py-3">Member</th>
                             <th class="px-4 py-3">Role / Designation</th>
@@ -123,46 +123,46 @@
                             <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/60">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {% for m in memberships %}
-                        <tr class="hover:bg-slate-850/50 transition-colors">
+                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-850/50 transition-colors">
                             <td class="px-6 py-3.5">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-slate-800 text-slate-200 font-bold text-xs flex items-center justify-center border border-slate-700 shadow-inner">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-inner">
                                         {{ m.user.first_name|first|default:m.user.username|first|upper }}
                                     </div>
                                     <div>
-                                        <p class="font-bold text-white">{{ m.user.get_full_name|default:m.user.username }}</p>
-                                        <p class="text-[10px] text-slate-400 font-mono">@{{ m.user.username }} &bull; {{ m.user.email }}</p>
+                                        <p class="font-bold text-slate-900 dark:text-white">{{ m.user.get_full_name|default:m.user.username }}</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">@{{ m.user.username }} &bull; {{ m.user.email }}</p>
                                     </div>
                                 </div>
                             </td>
 
                             <td class="px-4 py-3.5">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">
+                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20">
                                     {{ m.role }}
                                 </span>
                             </td>
 
                             <td class="px-4 py-3.5">
                                 {% if m.reporting_to %}
-                                <div class="flex items-center gap-1.5 text-slate-200">
-                                    <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-slate-500"></i>
+                                <div class="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                                    <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500"></i>
                                     <span class="font-medium">{{ m.reporting_to.get_full_name|default:m.reporting_to.username }}</span>
                                 </div>
                                 {% else %}
-                                <span class="text-slate-500 font-mono text-[10px]">-- Direct to Lead / Independent --</span>
+                                <span class="text-slate-400 dark:text-slate-500 font-mono text-[10px]">-- Direct to Lead / Independent --</span>
                                 {% endif %}
                             </td>
 
-                            <td class="px-4 py-3.5 font-mono text-slate-400 text-[11px]">
+                            <td class="px-4 py-3.5 font-mono text-slate-500 dark:text-slate-400 text-[11px]">
                                 {{ m.joined_at|date:"d M Y" }}
                             </td>
 
                             <td class="px-4 py-3.5 text-right">
                                 <form action="{% url 'teams:team_member_remove' pk=team.pk user_id=m.user.id %}" method="POST" onsubmit="return confirm('Remove this member from {{ team.name }}?');" class="inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors" title="Remove Member">
+                                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" title="Remove Member">
                                         <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </form>
@@ -170,7 +170,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-slate-500 text-xs">
+                            <td colspan="5" class="px-6 py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                                 No members assigned to this team yet. Click "Assign Member" above to add contributors.
                             </td>
                         </tr>
@@ -182,22 +182,22 @@
 
         <!-- Sub-Teams Section if applicable -->
         {% if sub_teams.exists %}
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="git-branch" class="w-4 h-4 text-emerald-400"></i>
+        <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-xl space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="git-branch" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                 Sub-Teams
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% for sub in sub_teams %}
-                <a href="{% url 'teams:team_detail' pk=sub.pk %}" class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between transition-colors">
+                <a href="{% url 'teams:team_detail' pk=sub.pk %}" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 flex items-center justify-between transition-colors shadow-sm">
                     <div class="flex items-center gap-3">
                         <span class="w-3 h-3 rounded-full" style="background-color: {{ sub.color }};"></span>
                         <div>
-                            <p class="text-xs font-bold text-white">{{ sub.name }}</p>
-                            <p class="text-[10px] text-slate-400">{{ sub.members_count }} Members &bull; Lead: {{ sub.lead.get_full_name|default:"Unassigned" }}</p>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ sub.name }}</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ sub.members_count }} Members &bull; Lead: {{ sub.lead.get_full_name|default:"Unassigned" }}</p>
                         </div>
                     </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                 </a>
                 {% endfor %}
             </div>
@@ -206,35 +206,45 @@
     </div>
 
     <!-- MODAL: ASSIGN MEMBER -->
-    <div x-show="showAddMemberModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div @click.away="showAddMemberModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4 text-brand-400"></i>
+    <div x-show="showAddMemberModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="showAddMemberModal = false" class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs text-slate-800 dark:text-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
                     Assign Member to {{ team.name }}
                 </h3>
-                <button @click="showAddMemberModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showAddMemberModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <form action="{% url 'teams:team_member_add' pk=team.pk %}" method="POST" class="space-y-4">
                 {% csrf_token %}
+                {% if all_users %}
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Select User *</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Select User *</label>
                     <select name="user_id" required
-                            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <option value="">-- Choose User --</option>
                         {% for u in all_users %}
                         <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} (@{{ u.username }})</option>
                         {% endfor %}
                     </select>
                 </div>
+                {% else %}
+                <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 space-y-2">
+                    <p class="font-semibold text-xs">No Available Users to Assign</p>
+                    <p class="text-[11px] text-amber-700 dark:text-amber-400">All registered users are already members of this team, or no non-admin users exist in the system.</p>
+                    <a href="{% url 'team_management' %}" class="inline-flex items-center gap-1 text-xs font-bold text-amber-900 dark:text-amber-200 underline hover:no-underline">
+                        <span>Go to Team & User Management to Add Users</span> &rarr;
+                    </a>
+                </div>
+                {% endif %}
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Role / Designation *</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Role / Designation *</label>
                     <select name="role" required
-                            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         {% for val, label in role_choices %}
                         <option value="{{ val }}">{{ label }}</option>
                         {% endfor %}
@@ -242,9 +252,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Reports To (Manager)</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Reports To (Manager)</label>
                     <select name="reporting_to_id"
-                            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <option value="">-- Default to Team Lead ({{ team.lead.get_full_name|default:"Unassigned" }}) --</option>
                         {% if team.lead %}
                         <option value="{{ team.lead.id }}" selected>{{ team.lead.get_full_name|default:team.lead.username }} (Team Lead)</option>
@@ -257,9 +267,11 @@
                     </select>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                    <button type="button" @click="showAddMemberModal = false" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white font-medium">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-lg shadow-brand-500/20">Assign Member</button>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddMemberModal = false" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white font-medium">Cancel</button>
+                    {% if all_users %}
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-md shadow-brand-500/20">Assign Member</button>
+                    {% endif %}
                 </div>
             </form>
         </div>

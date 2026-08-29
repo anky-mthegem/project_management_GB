@@ -15,12 +15,14 @@ from django.db import connections, transaction
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.core.management import call_command
 from django.utils.timezone import now
 
 from projects.models import (
     Project, Task, ProjectMember, ActivityLog,
     TaskDependency, TaskComment, TaskAttachment
 )
+from teams.models import Department, Team, TeamMembership
 
 
 def superuser_required(view_func):
@@ -85,8 +87,10 @@ def get_database_stats() -> dict:
         total_members = ProjectMember.objects.count()
         total_users = User.objects.count()
         total_logs = ActivityLog.objects.count()
+        total_teams = Team.objects.count()
+        total_depts = Department.objects.count()
     except Exception:
-        total_projects = total_tasks = total_members = total_users = total_logs = 0
+        total_projects = total_tasks = total_members = total_users = total_logs = total_teams = total_depts = 0
 
     return {
         'db_path': str(db_path),
@@ -99,6 +103,8 @@ def get_database_stats() -> dict:
         'total_members': total_members,
         'total_users': total_users,
         'total_logs': total_logs,
+        'total_teams': total_teams,
+        'total_depts': total_depts,
     }
 
 
@@ -403,6 +409,9 @@ def database_clear_view(request):
             Task.objects.all().delete()
             Project.objects.all().delete()
             ActivityLog.objects.all().delete()
+            TeamMembership.objects.all().delete()
+            Team.objects.all().delete()
+            Department.objects.all().delete()
 
             # Optional: Remove other created team users if requested
             if request.POST.get('remove_non_admin_users') == '1':
@@ -426,11 +435,38 @@ def database_clear_view(request):
 
         messages.success(
             request,
-            f"🧹 Database cleared successfully! Master administrator 'aman' is preserved. "
+            f"🧹 Database cleared successfully! All projects, tasks, and teams have been purged cleanly. "
+            f"Master administrator 'aman' is preserved. "
             f"An automatic safety rollback backup was saved as '{pre_clear_name}'."
         )
     except Exception as e:
         messages.error(request, f"Error clearing database: {str(e)}")
 
+    return redirect('admin:database_manage')
+
+
+@superuser_required
+def database_seed_teams_view(request):
+    """Initializes the demo organization team hierarchy structure."""
+    if request.method != 'POST':
+        return redirect('admin:database_manage')
+    try:
+        call_command('seed_teams')
+        messages.success(request, "🌱 Demo Team structure initialized successfully (Sundar Nadar as lead with direct reports)!")
+    except Exception as e:
+        messages.error(request, f"Error seeding team structure: {str(e)}")
+    return redirect('admin:database_manage')
+
+
+@superuser_required
+def database_seed_projects_view(request):
+    """Initializes the demo Indian Standard (INR ₹) project schedules."""
+    if request.method != 'POST':
+        return redirect('admin:database_manage')
+    try:
+        call_command('seed_data')
+        messages.success(request, "🌱 Sample Indian Standard (INR ₹) projects, tasks, and budgets seeded successfully!")
+    except Exception as e:
+        messages.error(request, f"Error seeding projects: {str(e)}")
     return redirect('admin:database_manage')
 

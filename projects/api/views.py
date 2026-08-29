@@ -43,24 +43,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         owner = self.request.user if (self.request.user and self.request.user.is_authenticated) else User.objects.get(username='aman')
         project = serializer.save(owner=owner)
-        if self.request.user and self.request.user.is_authenticated:
+        if self.request.user and self.request.user.is_authenticated and self.request.user.username.lower() != 'aman':
             ProjectMember.objects.get_or_create(
                 project=project,
                 user=self.request.user,
                 defaults={'role': ProjectRole.ADMIN}
             )
-        master_user = User.objects.filter(username='aman').first()
-        if master_user:
-            ProjectMember.objects.get_or_create(
-                project=project,
-                user=master_user,
-                defaults={'role': ProjectRole.ADMIN}
-            )
         ActivityLog.objects.create(
             project=project,
-            user=self.request.user if (self.request.user and self.request.user.is_authenticated) else master_user,
+            user=self.request.user if (self.request.user and self.request.user.is_authenticated) else User.objects.filter(username='aman').first(),
             action="Created Project",
-            details=f"Project '{project.name}' initialized (Master: @aman)."
+            details=f"Project '{project.name}' initialized."
         )
 
     @action(detail=True, methods=['get'], url_path='gantt-data')

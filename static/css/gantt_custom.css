@@ -1,18 +1,29 @@
-/* Gantt Excel Custom Styling & Frappe Gantt Dark Theme Overrides */
+/* Gantt Excel Custom Styling & Frappe Gantt Theme Overrides (Light & Dark) */
 
-/* Scrollbars */
+/* Scrollbars - Light Theme Default */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: #0f172a;
+    background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #cbd5e1;
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Scrollbars - Dark Theme */
+html.dark ::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+html.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
     background: #475569;
 }
 
@@ -36,14 +47,17 @@
     user-select: none;
 }
 
-/* Grid & Background */
+/* ======================================================== */
+/* LIGHT THEME GANTT SVG STYLING (DEFAULT)                  */
+/* ======================================================== */
+
 .gantt .grid-background {
-    fill: #090d16 !important;
+    fill: #ffffff !important;
 }
 
 .gantt .grid-header {
-    fill: #161f2e !important;
-    stroke: #1e293b !important;
+    fill: #f8fafc !important;
+    stroke: #e2e8f0 !important;
     stroke-width: 1 !important;
 }
 
@@ -53,35 +67,36 @@
 }
 
 .gantt .grid-row:nth-child(even) {
-    fill: rgba(30, 41, 59, 0.2) !important;
+    fill: rgba(241, 245, 249, 0.6) !important;
 }
 
 .gantt .row-line {
-    stroke: #1e293b !important;
+    stroke: #e2e8f0 !important;
     stroke-width: 1 !important;
 }
 
 .gantt .tick {
-    stroke: #1e293b !important;
+    stroke: #e2e8f0 !important;
     stroke-width: 1 !important;
 }
 
-.gantt .lower-text, .gantt .upper-text {
+.gantt .lower-text {
     font-family: 'Inter', sans-serif !important;
     font-size: 11px !important;
-    fill: #94a3b8 !important;
+    fill: #64748b !important;
     font-weight: 500 !important;
 }
 
 .gantt .upper-text {
+    font-family: 'Inter', sans-serif !important;
     font-size: 12px !important;
     font-weight: 600 !important;
-    fill: #cbd5e1 !important;
+    fill: #1e293b !important;
 }
 
 /* Highlight Today Column */
 .gantt .today-highlight {
-    fill: rgba(99, 102, 241, 0.1) !important;
+    fill: rgba(99, 102, 241, 0.08) !important;
     stroke: rgba(99, 102, 241, 0.4) !important;
     stroke-dasharray: 4 2 !important;
 }
@@ -96,7 +111,7 @@
 }
 
 .gantt .bar:hover {
-    filter: brightness(1.15) drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
+    filter: brightness(1.08) drop-shadow(0 2px 8px rgba(99, 102, 241, 0.25));
 }
 
 .gantt .bar-progress {
@@ -106,7 +121,7 @@
 }
 
 .gantt .bar-label {
-    fill: #f8fafc !important;
+    fill: #ffffff !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 11px !important;
     font-weight: 600 !important;
@@ -114,7 +129,7 @@
 }
 
 .gantt .bar-label.big {
-    fill: #94a3b8 !important;
+    fill: #475569 !important;
     font-size: 11px !important;
 }
 
@@ -123,7 +138,7 @@
     fill: #e11d48 !important;
     stroke: #fda4af !important;
     stroke-width: 2 !important;
-    filter: drop-shadow(0 0 8px rgba(225, 29, 72, 0.6)) !important;
+    filter: drop-shadow(0 0 6px rgba(225, 29, 72, 0.4)) !important;
 }
 .gantt .bar-critical-path-highlight .bar-progress {
     fill: #fb7185 !important;
@@ -131,8 +146,8 @@
 
 /* Baseline Ghost Bar in SVG */
 .gantt .baseline-ghost-bar {
-    fill: #475569 !important;
-    opacity: 0.6;
+    fill: #94a3b8 !important;
+    opacity: 0.5;
     rx: 4px;
     ry: 4px;
     stroke: #64748b;
@@ -171,7 +186,7 @@
 /* Milestone Diamond Bar */
 .gantt .bar-milestone .bar {
     fill: #f59e0b !important;
-    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.5));
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
 }
 .gantt .bar-milestone .bar-progress {
     fill: #fbbf24 !important;
@@ -179,27 +194,27 @@
 
 /* Dependency Arrow Lines */
 .gantt .arrow {
-    stroke: #818cf8 !important;
+    stroke: #6366f1 !important;
     stroke-width: 1.75 !important;
     fill: none !important;
     stroke-linecap: round !important;
     stroke-linejoin: round !important;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
 }
 
 .gantt .arrow:hover {
-    stroke: #c7d2fe !important;
+    stroke: #4338ca !important;
     stroke-width: 2.5 !important;
 }
 
-/* Popup / Tooltip */
+/* Popup / Tooltip (Light Default) */
 .gantt-container .popup-wrapper {
-    background: rgba(15, 23, 42, 0.95) !important;
-    border: 1px solid #334155 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: 12px !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
     padding: 12px 14px !important;
-    color: #f1f5f9 !important;
+    color: #0f172a !important;
     backdrop-filter: blur(8px) !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 11px !important;
@@ -209,30 +224,110 @@
 .gantt-container .popup-wrapper .title {
     font-size: 12px !important;
     font-weight: 700 !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid #1e293b !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0 !important;
     padding-bottom: 6px !important;
     margin-bottom: 6px !important;
 }
 
 .gantt-container .popup-wrapper .subtitle {
-    color: #94a3b8 !important;
+    color: #64748b !important;
     font-size: 11px !important;
 }
 
 .gantt-container .popup-wrapper .pointer {
-    border-top-color: #334155 !important;
+    border-top-color: #cbd5e1 !important;
 }
 
 /* Handles for resizing */
 .gantt .handle {
-    fill: #cbd5e1 !important;
+    fill: #64748b !important;
     cursor: ew-resize !important;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
 .gantt .bar-wrapper:hover .handle {
     opacity: 0.8;
+}
+
+/* ======================================================== */
+/* DARK THEME GANTT SVG STYLING OVERRIDES                   */
+/* ======================================================== */
+
+html.dark .gantt .grid-background {
+    fill: #090d16 !important;
+}
+
+html.dark .gantt .grid-header {
+    fill: #161f2e !important;
+    stroke: #1e293b !important;
+}
+
+html.dark .gantt .grid-row:nth-child(even) {
+    fill: rgba(30, 41, 59, 0.2) !important;
+}
+
+html.dark .gantt .row-line {
+    stroke: #1e293b !important;
+}
+
+html.dark .gantt .tick {
+    stroke: #1e293b !important;
+}
+
+html.dark .gantt .lower-text {
+    fill: #94a3b8 !important;
+}
+
+html.dark .gantt .upper-text {
+    fill: #cbd5e1 !important;
+}
+
+html.dark .gantt .today-highlight {
+    fill: rgba(99, 102, 241, 0.1) !important;
+    stroke: rgba(99, 102, 241, 0.4) !important;
+}
+
+html.dark .gantt .bar-label.big {
+    fill: #94a3b8 !important;
+}
+
+html.dark .gantt .baseline-ghost-bar {
+    fill: #475569 !important;
+    stroke: #64748b !important;
+}
+
+html.dark .gantt .arrow {
+    stroke: #818cf8 !important;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)) !important;
+}
+
+html.dark .gantt .arrow:hover {
+    stroke: #c7d2fe !important;
+}
+
+html.dark .gantt-container .popup-wrapper {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .gantt-container .popup-wrapper .title {
+    color: #ffffff !important;
+    border-bottom: 1px solid #1e293b !important;
+}
+
+html.dark .gantt-container .popup-wrapper .subtitle {
+    color: #94a3b8 !important;
+}
+
+html.dark .gantt-container .popup-wrapper .pointer {
+    border-top-color: #334155 !important;
+}
+
+html.dark .gantt .handle {
+    fill: #cbd5e1 !important;
 }
 
 /* Kanban Board Styling */
@@ -245,5 +340,17 @@
 }
 .kanban-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.1);
+}
+html.dark .kanban-card:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
+
+/* Org Chart Connectors */
+.org-line-vertical, .org-line-horizontal {
+    background-color: #cbd5e1;
+}
+html.dark .org-line-vertical, html.dark .org-line-horizontal {
+    background-color: #334155;
+}
+

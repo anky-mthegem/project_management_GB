@@ -1,4 +1,5 @@
 // Organization Chart & Collapsible Tree View Controller (MS Teams / Workday Style)
+// Supporting 3-Tier Operational Hierarchy: General Manager (GM) -> Manager (MGR) -> Team Member (TM)
 
 function getCookie(name) {
     let cookieValue = null;
@@ -25,7 +26,8 @@ window.teamManagerApp = function() {
         // Data sources
         hierarchyData: { departments: [], standalone_teams: [] },
         orgChartNodes: [],
-        orgTreeRoot: null,
+        orgTrees: [], // List of root trees (supports multi-lead / multi-department)
+        unassignedUsers: [],
         
         // Org Chart Canvas Controls
         zoomLevel: 1.0,
@@ -41,6 +43,7 @@ window.teamManagerApp = function() {
         reportingForm: {
             user_id: null,
             user_name: '',
+            role_code: '',
             current_manager_id: null,
             new_manager_id: null
         },
@@ -86,44 +89,42 @@ window.teamManagerApp = function() {
 
         buildOrgTree() {
             if (!this.orgChartNodes || this.orgChartNodes.length === 0) {
-                this.orgTreeRoot = null;
+                this.orgTrees = [];
+                this.unassignedUsers = [];
                 return;
             }
 
             const nodeMap = {};
+            const unassigned = [];
+
             this.orgChartNodes.forEach(node => {
                 nodeMap[node.id] = {
                     ...node,
                     children: [],
                     _matchesSearch: this.isNodeMatchingSearch(node)
                 };
+                if (!node.has_team && !node.parent_id) {
+                    unassigned.push(nodeMap[node.id]);
+                }
             });
 
-            let root = null;
             const roots = [];
 
             this.orgChartNodes.forEach(node => {
                 const current = nodeMap[node.id];
                 if (node.parent_id && nodeMap[node.parent_id]) {
                     nodeMap[node.parent_id].children.push(current);
-                } else {
+                } else if (node.has_team || node.tier_level <= 2) {
                     roots.push(current);
                 }
             });
 
-            // Find primary root (master admin 'aman' or first executive root)
-            root = roots.find(r => r.is_master) || roots[0] || null;
+            this.orgTrees = roots;
+            this.unassignedUsers = unassigned;
             
-            // If multiple disconnected roots exist, attach them under a virtual root or primary root
-            if (roots.length > 1 && root) {
-                roots.forEach(r => {
-                    if (r.id !== root.id && !root.children.some(c => c.id === r.id)) {
-                        root.children.push(r);
-                    }
-                });
-            }
-
-            this.orgTreeRoot = root;
+            this.$nextTick(() => {
+                if (window.lucide) lucide.createIcons();
+            });
         },
 
         isNodeMatchingSearch(node) {
@@ -139,7 +140,9 @@ window.teamManagerApp = function() {
 
         toggleNodeCollapse(nodeId) {
             this.collapsedNodes[nodeId] = !this.collapsedNodes[nodeId];
-            if (window.lucide) setTimeout(lucide.createIcons, 50);
+            this.$nextTick(() => {
+                if (window.lucide) lucide.createIcons();
+            });
         },
 
         isNodeCollapsed(nodeId) {
@@ -148,24 +151,28 @@ window.teamManagerApp = function() {
 
         expandAll() {
             this.collapsedNodes = {};
-            if (window.lucide) setTimeout(lucide.createIcons, 50);
+            this.$nextTick(() => {
+                if (window.lucide) lucide.createIcons();
+            });
         },
 
         collapseAll() {
-            const newCollapsed = {};
+            const allIds = {};
             this.orgChartNodes.forEach(n => {
-                if (n.direct_reports_count > 0) newCollapsed[n.id] = true;
+                if (n.direct_reports_count > 0) allIds[n.id] = true;
             });
-            this.collapsedNodes = newCollapsed;
-            if (window.lucide) setTimeout(lucide.createIcons, 50);
+            this.collapsedNodes = allIds;
+            this.$nextTick(() => {
+                if (window.lucide) lucide.createIcons();
+            });
         },
 
         zoomIn() {
-            if (this.zoomLevel < 1.6) this.zoomLevel = +(this.zoomLevel + 0.15).toFixed(2);
+            this.zoomLevel = Math.min(1.8, +(this.zoomLevel + 0.1).toFixed(2));
         },
 
         zoomOut() {
-            if (this.zoomLevel > 0.5) this.zoomLevel = +(this.zoomLevel - 0.15).toFixed(2);
+            this.zoomLevel = Math.max(0.4, +(this.zoomLevel - 0.1).toFixed(2));
         },
 
         resetZoom() {
@@ -176,14 +183,29 @@ window.teamManagerApp = function() {
             this.reportingForm = {
                 user_id: node.id,
                 user_name: node.name,
+                role_code: node.role_code || 'TM',
                 current_manager_id: node.parent_id,
                 new_manager_id: node.parent_id || ''
             };
             this.showReportingModal = true;
         },
 
+        getValidManagersForRole(roleCode, targetUserId) {
+            if (roleCode === 'MGR') {
+                // Managers can only report to GMs
+                return this.orgChartNodes.filter(n => n.id !== targetUserId && n.role_code === 'GM');
+            } else if (roleCode === 'TM') {
+                // Team Members report to Managers (or GMs)
+                return this.orgChartNodes.filter(n => n.id !== targetUserId && (n.role_code === 'MGR' || n.role_code === 'GM'));
+            } else {
+                // GMs report to other GMs or None
+                return this.orgChartNodes.filter(n => n.id !== targetUserId && n.role_code === 'GM');
+            }
+        },
+
         async saveReportingLine() {
             if (!this.reportingForm.user_id) return;
+            
             try {
                 const res = await fetch('/teams/api/update-reporting/', {
                     method: 'POST',
@@ -196,21 +218,23 @@ window.teamManagerApp = function() {
                         reporting_to_id: this.reportingForm.new_manager_id ? parseInt(this.reportingForm.new_manager_id) : null
                     })
                 });
+
                 const data = await res.json();
                 if (res.ok && data.status === 'success') {
-                    this.showToast(data.message, 'success');
+                    this.showToast(data.message || "Reporting line updated successfully!", "success");
                     this.showReportingModal = false;
                     await this.loadAllData();
                 } else {
-                    this.showToast(data.message || 'Failed to update reporting line.', 'error');
+                    this.showToast(data.message || "Failed to update reporting line.", "error");
                 }
-            } catch (e) {
-                this.showToast('Network error while updating reporting line.', 'error');
+            } catch (err) {
+                console.error(err);
+                this.showToast("Server error while updating reporting line.", "error");
             }
         },
 
-        showToast(msg, type = 'info') {
-            this.toastMessage = msg;
+        showToast(message, type = 'info') {
+            this.toastMessage = message;
             this.toastType = type;
             this.showToastNotification = true;
             setTimeout(() => {

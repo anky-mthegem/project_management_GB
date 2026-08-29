@@ -1,0 +1,1348 @@
+{% extends 'base.html' %}
+
+{% block title %}Master Admin Control Hub - Milestone Management{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex flex-col overflow-y-auto bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200"
+     x-data="{
+         activeTab: '{% if pending_approval_count > 0 %}users{% else %}users{% endif %}',
+         searchUserQuery: '',
+         userFilterTab: '{% if pending_approval_count > 0 %}pending_approval{% else %}all{% endif %}',
+         showAddUserModal: false,
+         showEditUserModal: false,
+         showApproveModal: false,
+         showDeleteUserModal: false,
+         showAddDeptModal: false,
+         showAddTeamModal: false,
+         
+         selectedUser: {
+             id: null,
+             username: '',
+             full_name: '',
+             first_name: '',
+             last_name: '',
+             email: '',
+             department_id: '',
+             team_id: '',
+             role_code: 'Member',
+             reporting_to_id: '',
+             is_active: true,
+             is_aman: false
+         },
+         generalManagers: {{ general_managers|safe }},
+         managers: {{ managers|safe }},
+         getValidManagers(roleCode, userId) {
+             if (roleCode === 'GM') {
+                 return this.generalManagers.filter(u => u.id != userId);
+             } else if (roleCode === 'MGR') {
+                 return this.generalManagers.filter(u => u.id != userId);
+             } else {
+                 return this.managers.filter(u => u.id != userId);
+             }
+         },
+
+         openApprove(u) {
+             this.selectedUser = {
+                 id: u.id,
+                 username: u.username,
+                 full_name: u.full_name,
+                 first_name: u.first_name,
+                 last_name: u.last_name,
+                 email: u.email === 'N/A' ? '' : u.email,
+                 department_id: u.department_id || '',
+                 team_id: u.team_id || '',
+                 role_code: u.role_code || 'TM',
+                 reporting_to_id: u.reporting_to_id || '',
+                 is_active: true,
+                 is_aman: u.is_aman
+             };
+             this.showApproveModal = true;
+         },
+         openEdit(u) {
+             this.selectedUser = {
+                 id: u.id,
+                 username: u.username,
+                 full_name: u.full_name,
+                 first_name: u.first_name,
+                 last_name: u.last_name,
+                 email: u.email === 'N/A' ? '' : u.email,
+                 department_id: u.department_id || '',
+                 team_id: u.team_id || '',
+                 role_code: u.role_code || 'TM',
+                 reporting_to_id: u.reporting_to_id || '',
+                 is_active: u.is_active,
+                 is_aman: u.is_aman
+             };
+             this.showEditUserModal = true;
+         },
+         openDelete(u) {
+             this.selectedUser = { ...u };
+             this.showDeleteUserModal = true;
+         },
+         matchesUserFilter(u) {
+             const q = this.searchUserQuery.toLowerCase().trim();
+             const matchesSearch = !q || 
+                 u.full_name.toLowerCase().includes(q) || 
+                 u.username.toLowerCase().includes(q) || 
+                 u.email.toLowerCase().includes(q) ||
+                 u.team_name.toLowerCase().includes(q) ||
+                 u.department_name.toLowerCase().includes(q) ||
+                 u.role_title.toLowerCase().includes(q);
+
+             if (!matchesSearch) return false;
+
+             if (this.userFilterTab === 'all') return true;
+             if (this.userFilterTab === 'pending_approval') return u.is_pending_approval;
+             if (this.userFilterTab === 'needs_setup') return u.needs_dept || u.no_team;
+             if (this.userFilterTab === 'active') return u.is_approved && !u.is_aman;
+             if (this.userFilterTab === 'leads') return u.role_code === 'Lead' || u.role_title.toLowerCase().includes('lead') || u.role_title.toLowerCase().includes('manager');
+             return true;
+         }
+     }">
+
+    <!-- Master Header Ribbon -->
+    <div class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 px-6 py-4 shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Left Info -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-brand-500/20">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Master Admin Hub</h1>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 font-mono">
+                            SUPERUSER @aman
+                        </span>
+                        {% if pending_approval_count > 0 %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">
+                            {{ pending_approval_count }} Pending Approval
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Simplified single-pane governance for accounts, teams, projects, and database operations.</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Toolbar -->
+            <div class="flex items-center gap-2">
+                <button @click="showAddUserModal = true"
+                        class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                    <span>Add User</span>
+                </button>
+                <button @click="showAddTeamModal = true"
+                        class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
+                    <i data-lucide="users-plus" class="w-3.5 h-3.5 text-brand-500"></i>
+                    <span>Add Team</span>
+                </button>
+                <a href="{% url 'admin:database_export' %}"
+                   class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Backup DB</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="max-w-7xl mx-auto w-full p-6 space-y-6">
+
+        <!-- Top Overview Metric Tiles -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+            <!-- Total Users -->
+            <div @click="activeTab = 'users'" class="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm hover:border-brand-400 transition-all">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                    <span>Personnel</span>
+                    <i data-lucide="users" class="w-4 h-4 text-brand-500"></i>
+                </div>
+                <p class="text-2xl font-black text-slate-900 dark:text-white mt-1.5">{{ total_members }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">{{ active_roles_count }} active members</p>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div @click="activeTab = 'users'; userFilterTab = 'pending_approval'"
+                 class="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm hover:border-amber-400 transition-all {% if pending_approval_count > 0 %}ring-2 ring-amber-500/40 bg-amber-50/20 dark:bg-amber-950/20{% endif %}">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                    <span>Approvals</span>
+                    <i data-lucide="user-check" class="w-4 h-4 {% if pending_approval_count > 0 %}text-amber-500{% else %}text-slate-400{% endif %}"></i>
+                </div>
+                <p class="text-2xl font-black {% if pending_approval_count > 0 %}text-amber-600 dark:text-amber-400{% else %}text-slate-900 dark:text-white{% endif %} mt-1.5">
+                    {{ pending_approval_count }}
+                </p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Awaiting activation</p>
+            </div>
+
+            <!-- Teams & Depts -->
+            <div @click="activeTab = 'teams'" class="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm hover:border-indigo-400 transition-all">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                    <span>Teams & Depts</span>
+                    <i data-lucide="network" class="w-4 h-4 text-indigo-500"></i>
+                </div>
+                <p class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1.5">{{ teams.count }} / {{ departments.count }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Teams / Departments</p>
+            </div>
+
+            <!-- Projects -->
+            <div @click="activeTab = 'projects'" class="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm hover:border-blue-400 transition-all">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                    <span>Projects</span>
+                    <i data-lucide="folder-kanban" class="w-4 h-4 text-blue-500"></i>
+                </div>
+                <p class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1.5">{{ total_projects }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Managed portfolios</p>
+            </div>
+
+            <!-- Database Size -->
+            <div @click="activeTab = 'database'" class="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm hover:border-emerald-400 transition-all">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                    <span>Database</span>
+                    <i data-lucide="database" class="w-4 h-4 text-emerald-500"></i>
+                </div>
+                <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1.5 font-mono text-sm sm:text-base pt-1">
+                    {{ db_stats.size_formatted|default:"SQLite" }}
+                </p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Live SQLite status</p>
+            </div>
+        </div>
+
+        <!-- Master Tab Navigation -->
+        <div class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-200/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+            <button @click="activeTab = 'users'"
+                    :class="activeTab === 'users' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Users & Approvals</span>
+                {% if pending_approval_count > 0 %}
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                    {{ pending_approval_count }}
+                </span>
+                {% endif %}
+            </button>
+
+            <button @click="activeTab = 'teams'"
+                    :class="activeTab === 'teams' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                <i data-lucide="network" class="w-4 h-4"></i>
+                <span>Teams & Org Structure</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 font-mono">{{ teams.count }}</span>
+            </button>
+
+            <button @click="activeTab = 'projects'"
+                    :class="activeTab === 'projects' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+                <span>Projects Portfolio</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 font-mono">{{ total_projects }}</span>
+            </button>
+
+            <button @click="activeTab = 'database'"
+                    :class="activeTab === 'database' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                <span>Database & Maintenance</span>
+            </button>
+
+            <button @click="activeTab = 'logs'"
+                    :class="activeTab === 'logs' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4"></i>
+                <span>Audit Logs</span>
+            </button>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 1: USERS & APPROVALS -->
+        <!-- ========================================================================= -->
+        <div x-show="activeTab === 'users'" class="space-y-6">
+
+            <!-- Pending Approvals Banner -->
+            {% if pending_approval_count > 0 %}
+            <div class="bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 rounded-2xl p-5 space-y-3.5 shadow-sm">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs">
+                            <i data-lucide="bell" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>Pending Self-Registration Requests</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">{{ pending_approvals|length }}</span>
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400">These users cannot log in until approved and assigned to a department/team.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                    {% for pu in pending_approvals %}
+                    <div class="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3.5 shadow-xs space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-bold text-xs flex items-center justify-center border border-amber-300 dark:border-amber-700">
+                                    {{ pu.initials }}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-900 dark:text-white">{{ pu.full_name }}</h4>
+                                    <p class="text-[11px] text-slate-500 font-mono">@{{ pu.username }}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                                Needs Approval
+                            </span>
+                        </div>
+
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 bg-slate-50 dark:bg-slate-850 p-2 rounded-lg font-mono">
+                            <div class="flex items-center justify-between">
+                                <span>Email:</span>
+                                <span class="text-slate-800 dark:text-slate-200 font-medium truncate max-w-[150px]">{{ pu.email }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Registered:</span>
+                                <span class="text-slate-600 dark:text-slate-400">{{ pu.date_joined|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <form method="POST" action="{% url 'approve_team_user' pu.id %}" class="flex-1">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="w-full py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-xs flex items-center justify-center gap-1.5 transition-colors">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                    <span>Instant Approve</span>
+                                </button>
+                            </form>
+
+                            <button type="button" @click="openApprove({{ pu|escapejs }})"
+                                    class="py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1">
+                                <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                                <span>Configure</span>
+                            </button>
+
+                            <form method="POST" action="{% url 'reject_team_user' pu.id %}" onsubmit="return confirm('Reject registration for @{{ pu.username }}?');">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors"
+                                        title="Reject Request">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filter Controls -->
+            <div class="bg-white border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl">
+                        <button @click="userFilterTab = 'all'"
+                                :class="userFilterTab === 'all' ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                            <span>All Users</span>
+                            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 font-mono">{{ total_members }}</span>
+                        </button>
+                        {% if pending_approval_count > 0 %}
+                        <button @click="userFilterTab = 'pending_approval'"
+                                :class="userFilterTab === 'pending_approval' ? 'bg-amber-500 text-white font-bold shadow-xs' : 'text-amber-700 dark:text-amber-400'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                            <span>Pending Approval</span>
+                            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white text-amber-800 font-bold">{{ pending_approval_count }}</span>
+                        </button>
+                        {% endif %}
+                        <button @click="userFilterTab = 'active'"
+                                :class="userFilterTab === 'active' ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                            <span>Active Personnel</span>
+                            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 font-mono">{{ active_roles_count }}</span>
+                        </button>
+                        <button @click="userFilterTab = 'needs_setup'"
+                                :class="userFilterTab === 'needs_setup' ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                            <span>Needs Team</span>
+                            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 font-mono">{{ unassigned_dept_count|add:no_team_count }}</span>
+                        </button>
+                    </div>
+
+                    <div class="relative w-full sm:w-72">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text"
+                               x-model="searchUserQuery"
+                               placeholder="Search personnel directory..."
+                               class="w-full pl-9 pr-8 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-850/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+                                <th class="py-3.5 px-4">User</th>
+                                <th class="py-3.5 px-4">Status</th>
+                                <th class="py-3.5 px-4">Department & Team</th>
+                                <th class="py-3.5 px-4">Role</th>
+                                <th class="py-3.5 px-4">Reporting Line</th>
+                                <th class="py-3.5 px-4">Workload</th>
+                                <th class="py-3.5 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            {% for u in team_users %}
+                            <tr x-show="matchesUserFilter({{ u|escapejs }})"
+                                class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors {% if u.is_pending_approval %}bg-amber-50/20 dark:bg-amber-950/10{% endif %}">
+                                
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0
+                                            {% if u.is_aman %}bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-600/40
+                                            {% elif u.is_pending_approval %}bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-600/40
+                                            {% elif u.role_code == 'Lead' %}bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600/40
+                                            {% else %}bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-600/40{% endif %}">
+                                            {{ u.initials }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-bold text-slate-900 dark:text-white truncate">{{ u.full_name }}</span>
+                                                {% if u.is_aman %}
+                                                <span class="px-1.5 py-0.2 text-[9px] rounded font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-600/40">ADMIN</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                                                <span>@{{ u.username }}</span>
+                                                <span>&bull;</span>
+                                                <span class="text-slate-400 truncate max-w-[150px]">{{ u.email }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    {% if u.is_aman %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        <i data-lucide="shield" class="w-3 h-3"></i>
+                                        <span>Master Admin</span>
+                                    </span>
+                                    {% elif u.is_pending_approval %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">
+                                        <i data-lucide="clock" class="w-3 h-3"></i>
+                                        <span>Pending Approval</span>
+                                    </span>
+                                    {% elif not u.is_active %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                        <i data-lucide="slash" class="w-3 h-3"></i>
+                                        <span>Deactivated</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+                                        <span>Active</span>
+                                    </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    {% if u.is_aman %}
+                                    <span class="text-slate-400 italic text-[11px]">System Superuser</span>
+                                    {% else %}
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-slate-500">Dept:</span>
+                                            {% if u.department %}
+                                            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ u.department_name }}</span>
+                                            {% else %}
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">Unassigned</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-slate-500">Team:</span>
+                                            {% if u.team %}
+                                            <span class="inline-flex items-center px-2 py-0.2 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-[10px] font-bold">
+                                                {{ u.team_name }}
+                                            </span>
+                                            {% else %}
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">No Team</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    {% if u.is_aman %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 border border-amber-300 dark:border-amber-600/40 inline-flex items-center gap-1">
+                                        <i data-lucide="shield" class="w-3 h-3"></i>
+                                        <span>Master Admin</span>
+                                    </span>
+                                    {% elif u.role_code == 'GM' %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300 border border-purple-300 dark:border-purple-600/40 inline-flex items-center gap-1.5">
+                                        <span class="font-mono bg-purple-200 dark:bg-purple-800 px-1 py-0.2 rounded text-[9px]">GM</span>
+                                        <span>General Manager</span>
+                                    </span>
+                                    {% elif u.role_code == 'MGR' %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 border border-blue-300 dark:border-blue-600/40 inline-flex items-center gap-1.5">
+                                        <span class="font-mono bg-blue-200 dark:bg-blue-800 px-1 py-0.2 rounded text-[9px]">MGR</span>
+                                        <span>Manager</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1.5">
+                                        <span class="font-mono bg-emerald-100 dark:bg-emerald-900 px-1 py-0.2 rounded text-[9px]">TM</span>
+                                        <span>Team Member</span>
+                                    </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    {% if u.is_aman %}
+                                    <span class="text-slate-400 italic text-[11px]">None (Platform Admin)</span>
+                                    {% elif u.reporting_to %}
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold flex items-center justify-center text-slate-700 dark:text-slate-200">
+                                            {{ u.reporting_to.first_name|default:u.reporting_to.username|slice:":1" }}
+                                        </div>
+                                        <span class="font-medium text-slate-800 dark:text-slate-200">{{ u.reporting_to_name }}</span>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-slate-400 text-[11px]">Direct / None</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    {% if u.is_aman %}
+                                    <span class="text-slate-400 italic text-[11px]">0 (Restricted)</span>
+                                    {% else %}
+                                    <div class="space-y-0.5">
+                                        <div class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                                            <span>{{ u.total_tasks }} Tasks</span>
+                                            <span class="text-emerald-600 dark:text-emerald-400 text-[10px]">({{ u.completed_tasks }} done)</span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-500">
+                                            {{ u.estimated_hours }}h est. / {{ u.actual_hours }}h logged
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3 px-4 text-right">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        {% if u.is_pending_approval %}
+                                        <form method="POST" action="{% url 'approve_team_user' u.id %}" class="inline">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-xs transition-colors flex items-center gap-1">
+                                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                                <span>Approve</span>
+                                            </button>
+                                        </form>
+                                        <button @click="openApprove({{ u|escapejs }})"
+                                                class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-white text-[11px] font-bold shadow-xs transition-colors flex items-center gap-1">
+                                            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                                            <span>Configure</span>
+                                        </button>
+                                        {% else %}
+                                        <button @click="openEdit({{ u|escapejs }})"
+                                                class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                                                title="Edit User">
+                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                        </button>
+
+                                        {% if not u.is_aman %}
+                                        <form method="POST" action="{% url 'toggle_team_user_status' u.id %}" class="inline">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="p-1.5 rounded-lg {% if u.is_active %}bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400{% else %}bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300{% endif %} transition-colors"
+                                                    title="{% if u.is_active %}Deactivate Account{% else %}Activate Account{% endif %}">
+                                                <i data-lucide="{% if u.is_active %}pause-circle{% else %}play-circle{% endif %}" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% endif %}
+
+                                        {% if not u.is_aman %}
+                                        <button @click="openDelete({{ u|escapejs }})"
+                                                class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 transition-colors"
+                                                title="Remove User">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 2: TEAMS & DEPARTMENTS -->
+        <!-- ========================================================================= -->
+        <div x-show="activeTab === 'teams'" class="space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Organization Hierarchy & Teams</h3>
+                    <p class="text-xs text-slate-500">Configure corporate departments, operational teams, and team leadership.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="showAddDeptModal = true"
+                            class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-500"></i>
+                        <span>+ Department</span>
+                    </button>
+                    <button @click="showAddTeamModal = true"
+                            class="px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                        <span>+ Team</span>
+                    </button>
+                    <a href="{% url 'teams:team_hierarchy' %}"
+                       class="px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                        <span>Interactive Org Chart</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Teams Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for t in teams %}
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 hover:border-brand-400 transition-all">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <span class="text-[10px] font-bold font-mono uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                                {{ t.department.name|default:"General Operations" }}
+                            </span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white mt-0.5">{{ t.name }}</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ t.description|default:"Active operational unit" }}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            {{ t.members_count }} members
+                        </span>
+                    </div>
+
+                    <!-- Lead Info -->
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center">
+                                <i data-lucide="crown" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Team Lead</span>
+                                <p class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                    {{ t.lead.get_full_name|default:t.lead.username|default:"Unassigned" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% if t.lead %}
+                        <span class="text-[11px] font-mono text-purple-600 dark:text-purple-400">@{{ t.lead.username }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Members Roster -->
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Assigned Members</span>
+                        <div class="flex flex-wrap gap-1.5 mt-1.5">
+                            {% for m in t.memberships.all %}
+                            {% if m.user.username != 'aman' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                <strong>{{ m.user.get_full_name|default:m.user.username }}</strong>
+                                <span class="text-[9px] text-slate-400">({{ m.role }})</span>
+                            </span>
+                            {% endif %}
+                            {% empty %}
+                            <span class="text-xs text-slate-400 italic">No members assigned yet</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Action Link -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                        <a href="{% url 'teams:team_detail' t.pk %}"
+                           class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+                            <span>View Full Team Details</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 3: PROJECTS PORTFOLIO -->
+        <!-- ========================================================================= -->
+        <div x-show="activeTab === 'projects'" class="space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Project Portfolios & Milestones</h3>
+                    <p class="text-xs text-slate-500">Monitor enterprise schedules, budgets, completion rates, and critical paths.</p>
+                </div>
+                <a href="{% url 'dashboard' %}"
+                   class="px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                    <span>Open Projects Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for p in projects %}
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 hover:border-blue-400 transition-all">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                {{ p.code }}
+                            </span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white mt-1.5">{{ p.name }}</h4>
+                            <p class="text-xs text-slate-500">Owner: <strong class="text-slate-700 dark:text-slate-300">{{ p.owner_name }}</strong></p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold 
+                            {% if p.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300
+                            {% elif p.status == 'COMPLETED' %}bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300
+                            {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                            {{ p.status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
+                            <span>Progress</span>
+                            <span>{{ p.progress }}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 rounded-full" style="width: {{ p.progress }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="grid grid-cols-3 gap-2 text-center text-[11px] bg-slate-50 dark:bg-slate-850 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div>
+                            <span class="text-slate-400 block">Tasks</span>
+                            <strong class="text-slate-800 dark:text-slate-200">{{ p.total_tasks }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block">Completed</span>
+                            <strong class="text-emerald-600 dark:text-emerald-400">{{ p.completed_tasks }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block">Critical</span>
+                            <strong class="text-rose-600 dark:text-rose-400">{{ p.critical_tasks }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-400 font-mono">{{ p.start_date }} &rarr; {{ p.end_date }}</span>
+                        <a href="{% url 'project_gantt' p.code %}"
+                           class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+                            <span>Interactive Gantt</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 4: DATABASE & MAINTENANCE -->
+        <!-- ========================================================================= -->
+        <div x-show="activeTab === 'database'" class="space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Database Administration & System Backups</h3>
+                    <p class="text-xs text-slate-500">Manage SQLite database snapshots, data seeding, and disaster recovery.</p>
+                </div>
+            </div>
+
+            <!-- Database Info Tile -->
+            {% if db_stats %}
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+                            <i data-lucide="database" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Live Database: {{ db_stats.db_filename }}</h4>
+                            <p class="text-xs text-slate-500 font-mono truncate max-w-lg">{{ db_stats.db_path }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'admin:database_export' %}"
+                           class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Export Database (.sqlite3)</span>
+                        </a>
+                        <a href="{% url 'admin:database_manage' %}"
+                           class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors flex items-center gap-1.5">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                            <span>Full Backup Manager</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 pt-2">
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">File Size</span>
+                        <strong class="text-sm font-mono text-emerald-600 dark:text-emerald-400">{{ db_stats.size_formatted }}</strong>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Projects</span>
+                        <strong class="text-sm text-slate-800 dark:text-slate-200">{{ db_stats.total_projects }}</strong>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Tasks</span>
+                        <strong class="text-sm text-slate-800 dark:text-slate-200">{{ db_stats.total_tasks }}</strong>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Personnel</span>
+                        <strong class="text-sm text-slate-800 dark:text-slate-200">{{ db_stats.total_users }}</strong>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Teams</span>
+                        <strong class="text-sm text-slate-800 dark:text-slate-200">{{ db_stats.total_teams }}</strong>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Last Modified</span>
+                        <strong class="text-xs text-slate-700 dark:text-slate-300">{{ db_stats.last_modified|date:"d/m H:i" }}</strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- One-Click System Restoration / Seeding -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i>
+                    <span>Quick Seeding & System Restore Tools</span>
+                </h4>
+                <p class="text-xs text-slate-500">Execute automated data population scripts to restore standard demo structures with a single click.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <h5 class="text-xs font-bold text-slate-900 dark:text-white">Seed Standard Teams ("Cool Team")</h5>
+                        <p class="text-[11px] text-slate-500">Configures Sundar Nadar (@psundar) as Lead with Suraj Hande, Swapnil Mali, and Amandeep Singh reporting to Sundar.</p>
+                        <form method="POST" action="{% url 'admin_seed_teams' %}" onsubmit="return confirm('Seed demo team structure?');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                                <span>Seed Teams Now</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <h5 class="text-xs font-bold text-slate-900 dark:text-white">Seed Demo Projects & Tasks</h5>
+                        <p class="text-[11px] text-slate-500">Populates standard enterprise Gantt projects, critical path tasks, milestones, and dependencies.</p>
+                        <form method="POST" action="{% url 'admin_seed_projects' %}" onsubmit="return confirm('Seed demo projects?');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="py-1.5 px-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                                <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+                                <span>Seed Projects Now</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 5: AUDIT LOGS -->
+        <!-- ========================================================================= -->
+        <div x-show="activeTab === 'logs'" class="space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">System Audit Trail & Activity Logs</h3>
+                    <p class="text-xs text-slate-500">Real-time log of administrative and operational actions across the platform.</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-850/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+                                <th class="py-3 px-4">Timestamp</th>
+                                <th class="py-3 px-4">Actor</th>
+                                <th class="py-3 px-4">Action</th>
+                                <th class="py-3 px-4">Project / Task</th>
+                                <th class="py-3 px-4">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            {% for log in recent_logs %}
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                <td class="py-2.5 px-4 font-mono text-[11px] text-slate-500">{{ log.created_at|date:"d/m/Y H:i" }}</td>
+                                <td class="py-2.5 px-4 font-bold text-slate-900 dark:text-white">{{ log.user.get_full_name|default:log.user.username|default:"System" }}</td>
+                                <td class="py-2.5 px-4">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                        {{ log.action }}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-4 text-slate-600 dark:text-slate-400">{{ log.project.name|default:"Global" }}</td>
+                                <td class="py-2.5 px-4 text-slate-500 truncate max-w-xs">{{ log.details|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-slate-400 italic">No activity logs recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODALS -->
+    <!-- ========================================================================= -->
+
+    <!-- APPROVE USER MODAL -->
+    <div x-show="showApproveModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showApproveModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center">
+                        <i data-lucide="user-check" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Approve & Provision User</h3>
+                        <p class="text-xs text-slate-500">Configure team allocation and activate login</p>
+                    </div>
+                </div>
+                <button type="button" @click="showApproveModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900 dark:text-white" x-text="selectedUser.full_name"></h4>
+                    <p class="text-[11px] text-slate-500 font-mono" x-text="`@${selectedUser.username} &bull; ${selectedUser.email}`"></p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
+                    Awaiting Approval
+                </span>
+            </div>
+
+            <form :action="`/team/${selectedUser.id}/approve/`" method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Target Department</label>
+                    <select name="department_id" x-model="selectedUser.department_id"
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="">-- Select Department --</option>
+                        {% for d in departments %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Assigned Team <span class="text-slate-400">(Optional)</span></label>
+                    <select name="team_id" x-model="selectedUser.team_id"
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="">-- No Team (Unassigned / Pending Allocation) --</option>
+                        {% for t in teams %}
+                        <option value="{{ t.id }}">{{ t.name }} ({{ t.department.name|default:"General" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Role / Position</label>
+                        <select name="role" x-model="selectedUser.role_code"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            {% for code, label in role_choices %}
+                            <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <span>Reporting Manager</span>
+                            <span class="text-[10px] text-slate-400 font-normal" x-text="selectedUser.role_code === 'MGR' ? '(Requires GM)' : (selectedUser.role_code === 'TM' ? '(Requires MGR)' : '(Optional GM)')"></span>
+                        </label>
+                        <select name="reporting_to_id" x-model="selectedUser.reporting_to_id"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="">-- Direct / None --</option>
+                            <template x-for="m in getValidManagers(selectedUser.role_code, selectedUser.id)" :key="m.id">
+                                <option :value="m.id" :selected="selectedUser.reporting_to_id == m.id" x-text="`${m.name} (@${m.username})`"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showApproveModal = false"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        <span>Approve & Activate</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD USER MODAL -->
+    <div x-show="showAddUserModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showAddUserModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 flex items-center justify-center">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Add New User</h3>
+                        <p class="text-xs text-slate-500">Create and provision a new account</p>
+                    </div>
+                </div>
+                <button type="button" @click="showAddUserModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form action="{% url 'create_team_user' %}" method="POST" class="space-y-3.5">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">First Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="first_name" required placeholder="First name"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                        <input type="text" name="last_name" placeholder="Last name"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Username / ID <span class="text-red-500">*</span></label>
+                        <input type="text" name="username" required placeholder="e.g. jdoe"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                        <input type="text" name="password" placeholder="Default: Godrej@123"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                    <input type="email" name="email" placeholder="user@godrej.com"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+                        <select name="department_id"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="">-- Optional Dept --</option>
+                            {% for d in departments %}
+                            <option value="{{ d.id }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Assigned Team</label>
+                        <select name="team_id"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="">-- Select Team --</option>
+                            {% for t in teams %}
+                            <option value="{{ t.id }}">{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddUserModal = false"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Create & Activate</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT USER MODAL -->
+    <div x-show="showEditUserModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showEditUserModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white" x-text="`Edit User: @${selectedUser.username}`"></h3>
+                <button type="button" @click="showEditUserModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form :action="`/team/${selectedUser.id}/edit/`" method="POST" class="space-y-3.5">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">First Name</label>
+                        <input type="text" name="first_name" x-model="selectedUser.first_name" required
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                        <input type="text" name="last_name" x-model="selectedUser.last_name"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                        <input type="email" name="email" x-model="selectedUser.email"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Reset Password</label>
+                        <input type="password" name="new_password" placeholder="Leave blank to keep current"
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                    </div>
+                </div>
+
+                <div x-show="!selectedUser.is_aman" class="space-y-3.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+                            <select name="department_id" x-model="selectedUser.department_id"
+                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="">-- No Department --</option>
+                                {% for d in departments %}
+                                <option value="{{ d.id }}">{{ d.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Assigned Team</label>
+                            <select name="team_id" x-model="selectedUser.team_id"
+                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="">-- No Team --</option>
+                                {% for t in teams %}
+                                <option value="{{ t.id }}">{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
+                            <select name="role" x-model="selectedUser.role_code"
+                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                {% for code, label in role_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Reporting Manager</span>
+                                <span class="text-[10px] text-slate-400 font-normal" x-text="selectedUser.role_code === 'MGR' ? '(Requires GM)' : (selectedUser.role_code === 'TM' ? '(Requires MGR)' : '(Optional GM)')"></span>
+                            </label>
+                            <select name="reporting_to_id" x-model="selectedUser.reporting_to_id"
+                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="">-- Direct / None --</option>
+                                <template x-for="m in getValidManagers(selectedUser.role_code, selectedUser.id)" :key="m.id">
+                                    <option :value="m.id" :selected="selectedUser.reporting_to_id == m.id" x-text="`${m.name} (@${m.username})`"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showEditUserModal = false"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE USER MODAL -->
+    <div x-show="showDeleteUserModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showDeleteUserModal = false">
+            <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div class="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-800">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Confirm User Removal</h3>
+                    <p class="text-xs text-slate-500">Safely remove account and unassign active tasks</p>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Are you sure you want to remove <strong class="text-slate-900 dark:text-white font-mono" x-text="`@${selectedUser.username}`"></strong>?
+                Any tasks assigned to this user will be moved to <em>Unassigned</em>.
+            </p>
+
+            <form :action="`/team/${selectedUser.id}/delete/`" method="POST" class="pt-2 flex items-center justify-end gap-2.5">
+                {% csrf_token %}
+                <button type="button" @click="showDeleteUserModal = false"
+                        class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>Yes, Delete</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD DEPARTMENT MODAL -->
+    <div x-show="showAddDeptModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showAddDeptModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Create Department</h3>
+                <button type="button" @click="showAddDeptModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form action="{% url 'admin_create_department' %}" method="POST" class="space-y-3.5">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Department Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g. Product Engineering"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Code / Slug</label>
+                    <input type="text" name="code" placeholder="e.g. prod-eng"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Department Head</label>
+                    <select name="head_id"
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="">-- No Head --</option>
+                        {% for m in potential_managers %}
+                        <option value="{{ m.id }}">{{ m.get_full_name|default:m.username }} (@{{ m.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddDeptModal = false"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Create Department</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD TEAM MODAL -->
+    <div x-show="showAddTeamModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150"
+             @click.away="showAddTeamModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Create Team</h3>
+                <button type="button" @click="showAddTeamModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form action="{% url 'admin_create_team' %}" method="POST" class="space-y-3.5">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Team Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g. Core Platform Team"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+                    <select name="department_id"
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="">-- Select Department --</option>
+                        {% for d in departments %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Team Lead / Manager</label>
+                    <select name="lead_id"
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="">-- Select Team Lead --</option>
+                        {% for m in potential_managers %}
+                        <option value="{{ m.id }}">{{ m.get_full_name|default:m.username }} (@{{ m.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+                    <textarea name="description" rows="2" placeholder="Team responsibilities..."
+                              class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddTeamModal = false"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Create Team</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -4,41 +4,142 @@
 
 {% block extra_head %}
 <style>
-    /* Org Chart Hierarchy Connectors & Layout */
-    .org-tree-wrapper {
+    /* Professional CSS Org Chart Tree Connectors */
+    .org-chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: max-content;
+        padding: 2.5rem;
+    }
+
+    .org-tree {
         display: flex;
         justify-content: center;
-        padding: 2rem;
-        min-width: max-content;
+        gap: 3rem;
+        flex-wrap: nowrap;
     }
-    .org-node-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+    .org-tree ul {
+        padding-top: 24px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        padding-left: 0;
+        list-style-type: none;
     }
-    .org-node-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+
+    .org-tree li {
+        float: left;
+        text-align: center;
+        list-style-type: none;
+        position: relative;
+        padding: 24px 12px 0 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-    .org-line-vertical {
+
+    /* Horizontal branch connectors */
+    .org-tree li::before, .org-tree li::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 50%;
+        border-top: 2px solid #cbd5e1;
+        width: 50%;
+        height: 24px;
+    }
+
+    html.dark .org-tree li::before, html.dark .org-tree li::after {
+        border-top-color: #475569;
+    }
+
+    .org-tree li::after {
+        right: auto;
+        left: 50%;
+        border-left: 2px solid #cbd5e1;
+    }
+
+    html.dark .org-tree li::after {
+        border-left-color: #475569;
+    }
+
+    /* Only child: no horizontal connectors needed */
+    .org-tree li:only-child::after, .org-tree li:only-child::before {
+        display: none;
+    }
+
+    .org-tree li:only-child {
+        padding-top: 24px;
+    }
+
+    .org-tree li:first-child::before, .org-tree li:last-child::after {
+        border: 0 none;
+    }
+
+    .org-tree li:last-child::before {
+        border-right: 2px solid #cbd5e1;
+        border-radius: 0 10px 0 0;
+    }
+
+    html.dark .org-tree li:last-child::before {
+        border-right-color: #475569;
+    }
+
+    .org-tree li:first-child::after {
+        border-radius: 10px 0 0 0;
+    }
+
+    /* Vertical line down from parent card */
+    .org-tree ul ul::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        border-left: 2px solid #cbd5e1;
+        width: 0;
+        height: 24px;
+        transform: translateX(-50%);
+    }
+
+    html.dark .org-tree ul ul::before {
+        border-left-color: #475569;
+    }
+
+    .org-line-down-parent {
         width: 2px;
         height: 24px;
-        background-color: #334155;
+        background-color: #cbd5e1;
         margin: 0 auto;
     }
-    .org-line-horizontal {
-        height: 2px;
-        background-color: #334155;
-        position: relative;
+
+    html.dark .org-line-down-parent {
+        background-color: #475569;
+    }
+
+    /* Node Card Hover */
+    .org-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .org-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    html.dark .org-card:hover {
+        box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="flex-1 flex flex-col overflow-hidden bg-slate-950 text-slate-200"
+<div class="flex-1 flex flex-col overflow-hidden bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200"
      x-data="teamManagerApp()"
      x-init="init()">
 
-    <!-- Top Ribbon / Action Bar -->
-    <div class="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 z-20 shadow-md">
+    <!-- Top Action Ribbon -->
+    <div class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 z-20 shadow-sm">
         
         <!-- Left: Title & KPI Summary -->
         <div class="flex items-center space-x-4">
@@ -47,340 +148,315 @@
             </div>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-base font-bold text-white tracking-tight">Organization & Team Manager</h1>
-                    <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-semibold">Live Hierarchy</span>
+                    <h1 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Organization & Team Manager</h1>
+                    <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/20 font-semibold">Live Hierarchy</span>
                 </div>
-                <p class="text-xs text-slate-400">
-                    <span class="text-slate-200 font-semibold" x-text="hierarchyData.departments ? hierarchyData.departments.length : {{ total_depts }}"></span> Departments &bull;
-                    <span class="text-slate-200 font-semibold">{{ total_teams }}</span> Teams &bull;
-                    <span class="text-slate-200 font-semibold">{{ total_members }}</span> Total Personnel
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    <span class="text-slate-800 dark:text-slate-200 font-semibold" x-text="hierarchyData.departments ? hierarchyData.departments.length : {{ total_depts }}"></span> Departments &bull;
+                    <span class="text-slate-800 dark:text-slate-200 font-semibold">{{ total_teams }}</span> Teams &bull;
+                    <span class="text-slate-800 dark:text-slate-200 font-semibold">{{ total_members }}</span> Total Personnel
                 </p>
             </div>
         </div>
 
-        <!-- Center: Dual-View Switcher Tabs -->
-        <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <!-- Center: Tab Switcher -->
+        <div class="flex items-center bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
             <button @click="activeTab = 'org-chart'"
-                    :class="activeTab === 'org-chart' ? 'bg-brand-600 text-white shadow-md font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                    :class="activeTab === 'org-chart' ? 'bg-white text-brand-600 shadow-sm dark:bg-brand-600 dark:text-white font-semibold' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'"
                     class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs transition-all">
                 <i data-lucide="git-merge" class="w-3.5 h-3.5"></i>
                 <span>Org Chart View</span>
             </button>
             <button @click="activeTab = 'tree'"
-                    :class="activeTab === 'tree' ? 'bg-brand-600 text-white shadow-md font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                    :class="activeTab === 'tree' ? 'bg-white text-brand-600 shadow-sm dark:bg-brand-600 dark:text-white font-semibold' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'"
                     class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs transition-all">
                 <i data-lucide="folder-tree" class="w-3.5 h-3.5"></i>
                 <span>Collapsible Tree</span>
             </button>
             <button @click="activeTab = 'directory'"
-                    :class="activeTab === 'directory' ? 'bg-brand-600 text-white shadow-md font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                    :class="activeTab === 'directory' ? 'bg-white text-brand-600 shadow-sm dark:bg-brand-600 dark:text-white font-semibold' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'"
                     class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs transition-all">
                 <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
                 <span>Teams Directory</span>
             </button>
         </div>
 
-        <!-- Right: Actions & Creation Buttons -->
+        <!-- Right: Actions -->
         <div class="flex items-center space-x-2">
             <button @click="showAddDeptModal = true"
-                    class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                <i data-lucide="building-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm">
+                <i data-lucide="building-2" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
                 <span>+ Department</span>
             </button>
 
             <button @click="showAddTeamModal = true"
-                    class="px-3.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]">
+                    class="px-3.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]">
                 <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 <span>+ Create Team</span>
             </button>
         </div>
     </div>
 
-    <!-- Secondary Controls Bar (Search & Zoom Controls) -->
-    <div class="bg-slate-900/60 border-b border-slate-800/80 px-6 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+    <!-- Secondary Controls Bar -->
+    <div class="bg-slate-100/80 border-b border-slate-200 dark:bg-slate-900/60 dark:border-slate-800/80 px-6 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <!-- Search Bar -->
         <div class="relative w-72">
-            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5"></i>
             <input type="text" x-model="searchQuery" placeholder="Search member, role, or team..."
-                   class="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-750 rounded-lg text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            <button x-show="searchQuery" @click="searchQuery = ''" class="absolute right-2.5 top-2 text-slate-500 hover:text-white">
+                   class="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-750 rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-sm">
+            <button x-show="searchQuery" @click="searchQuery = ''" class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-white">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
 
-        <!-- Org Chart View Controls (Zoom & Expand) -->
+        <!-- Org Chart Canvas Controls -->
         <div class="flex items-center space-x-2" x-show="activeTab === 'org-chart'">
             <button @click="expandAll()" title="Expand All Branches"
-                    class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs flex items-center gap-1 transition-colors">
+                    class="px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white dark:border-slate-700 text-xs flex items-center gap-1 transition-colors shadow-sm">
                 <i data-lucide="maximize-2" class="w-3 h-3"></i>
                 <span>Expand All</span>
             </button>
             <button @click="collapseAll()" title="Collapse All Branches"
-                    class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs flex items-center gap-1 transition-colors">
+                    class="px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white dark:border-slate-700 text-xs flex items-center gap-1 transition-colors shadow-sm">
                 <i data-lucide="minimize-2" class="w-3 h-3"></i>
                 <span>Collapse All</span>
             </button>
 
-            <div class="flex items-center bg-slate-950 rounded-md border border-slate-800 p-0.5 ml-2">
-                <button @click="zoomOut()" title="Zoom Out" class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800">
+            <div class="flex items-center bg-white dark:bg-slate-950 rounded-md border border-slate-200 dark:border-slate-800 p-0.5 ml-2 shadow-sm">
+                <button @click="zoomOut()" title="Zoom Out" class="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800">
                     <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                 </button>
-                <span class="px-2 text-[10px] font-mono text-slate-400" x-text="`${Math.round(zoomLevel * 100)}%`"></span>
-                <button @click="zoomIn()" title="Zoom In" class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800">
+                <span class="px-2 text-[10px] font-mono text-slate-600 dark:text-slate-400" x-text="`${Math.round(zoomLevel * 100)}%`"></span>
+                <button @click="zoomIn()" title="Zoom In" class="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
-                <button @click="resetZoom()" title="Reset Zoom" class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 border-l border-slate-800 ml-0.5">
-                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                <button @click="resetZoom()" title="Reset Zoom" class="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800 border-l border-slate-200 dark:border-slate-800 ml-0.5">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MAIN VIEW CONTAINER -->
-    <div class="flex-1 overflow-auto relative p-6 bg-slate-950">
+    <div class="flex-1 overflow-auto relative p-6 bg-slate-50 dark:bg-slate-950">
         
         <!-- Loading State -->
         <div x-show="isLoading" class="flex flex-col items-center justify-center h-64 space-y-3">
             <div class="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs text-slate-400">Loading organization hierarchy...</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Loading organization hierarchy...</p>
         </div>
 
         <!-- ================================================================= -->
-        <!-- VIEW 1: MS TEAMS / WORKDAY STYLE ORG CHART                       -->
+        <!-- VIEW 1: CLEAN MULTI-BRANCH ORGANIZATION CHART                     -->
         <!-- ================================================================= -->
-        <div x-show="!isLoading && activeTab === 'org-chart'" class="min-w-full flex justify-center items-start">
-            <div class="org-tree-wrapper" :style="`transform: scale(${zoomLevel}); transform-origin: top center;`">
+        <div x-show="!isLoading && activeTab === 'org-chart'" class="w-full flex flex-col items-center">
+            
+            <div class="org-chart-container" :style="`transform: scale(${zoomLevel}); transform-origin: top center;`">
                 
-                <template x-if="orgTreeRoot">
-                    <div class="flex flex-col items-center">
-                        
-                        <!-- Recursive Node Template Macro -->
+                <!-- Unassigned Personnel Tray (if any) -->
+                <div x-show="unassignedUsers && unassignedUsers.length > 0" class="w-full max-w-4xl mb-8 p-4 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-300/80 dark:border-amber-700/60 rounded-2xl shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span>Unassigned Personnel Pool</span>
+                                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-bold" x-text="unassignedUsers.length"></span>
+                            </h4>
+                        </div>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">Active personnel not yet allocated to a team or direct manager</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                        <template x-for="u in unassignedUsers" :key="u.id">
+                            <div class="p-2.5 bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/40 rounded-xl flex items-center justify-between gap-2 shadow-xs">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                        <span x-text="u.initials"></span>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="u.name"></p>
+                                        <p class="text-[10px] text-slate-500 font-mono truncate" x-text="`@${u.username}`"></p>
+                                    </div>
+                                </div>
+                                <button @click="openReportingModal(u)"
+                                        class="px-2 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 text-[10px] font-bold border border-brand-200 dark:border-brand-800 transition-colors shrink-0">
+                                    Assign Manager
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Tree Branches (Multi-root: one per team lead/manager) -->
+                <div class="org-tree">
+                    <template x-for="root in orgTrees" :key="root.id">
                         <div class="flex flex-col items-center">
-                            <!-- Root Node Card -->
-                            <div class="org-node-card w-72 bg-slate-900 border rounded-2xl p-4 shadow-xl relative cursor-pointer"
-                                 :class="orgTreeRoot._matchesSearch ? 'border-brand-500/60 ring-2 ring-brand-500/20' : 'border-slate-800'"
-                                 :style="`border-top: 4px solid ${orgTreeRoot.color || '#f59e0b'};`">
+                            
+                            <!-- Root Lead Node Card -->
+                            <div class="org-card w-72 bg-white dark:bg-slate-900 border rounded-2xl p-4 shadow-md dark:shadow-xl relative cursor-pointer"
+                                 :class="root._matchesSearch ? 'ring-2 ring-brand-500/50 border-brand-500' : 'border-slate-200 dark:border-slate-800'"
+                                 :style="`border-top: 4px solid ${root.color || '#6366f1'};`">
                                 
                                 <div class="flex items-start gap-3">
-                                    <!-- Avatar with Active Dot -->
+                                    <!-- Avatar -->
                                     <div class="relative shrink-0">
-                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-md bg-gradient-to-br from-amber-500 to-rose-600">
-                                            <span x-text="orgTreeRoot.initials"></span>
+                                        <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-md"
+                                             :style="`background: linear-gradient(135deg, ${root.color || '#4f46e5'}, #3730a3);`">
+                                            <span x-text="root.initials"></span>
                                         </div>
-                                        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="Active Personnel"></span>
+                                        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
                                     </div>
 
                                     <!-- Node Info -->
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center justify-between">
-                                            <h3 class="text-xs font-bold text-white truncate" x-text="orgTreeRoot.name"></h3>
-                                            <span x-show="orgTreeRoot.is_master" class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">CEO</span>
+                                    <div class="flex-1 min-w-0 text-left">
+                                        <div class="flex items-center justify-between gap-1">
+                                            <h3 class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="root.name"></h3>
+                                            <span class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                                                LEAD
+                                            </span>
                                         </div>
-                                        <p class="text-[11px] font-semibold text-brand-400 mt-0.5 truncate" x-text="orgTreeRoot.role"></p>
-                                        <p class="text-[10px] text-slate-400 truncate" x-text="`${orgTreeRoot.team_name} &bull; ${orgTreeRoot.department_name}`"></p>
+                                        <p class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 mt-0.5 truncate" x-text="root.role"></p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate" x-text="`${root.team_name} &bull; ${root.department_name}`"></p>
                                     </div>
                                 </div>
 
-                                <!-- Bottom Badge & Collapse Trigger -->
-                                <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[10px]">
-                                    <span class="text-slate-400 flex items-center gap-1 font-mono font-medium">
-                                        <i data-lucide="users" class="w-3 h-3 text-slate-500"></i>
-                                        <span x-text="`${orgTreeRoot.direct_reports_count} Direct Reports`"></span>
+                                <!-- Bottom Badge & Reporting Action -->
+                                <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
+                                    <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1 font-mono font-medium">
+                                        <i data-lucide="users" class="w-3 h-3 text-slate-400"></i>
+                                        <span x-text="`${root.direct_reports_count} Direct Reports`"></span>
                                     </span>
 
                                     <div class="flex items-center gap-1">
-                                        <button @click.stop="openReportingModal(orgTreeRoot)" title="Change Reporting Line" class="p-1 text-slate-400 hover:text-brand-400 rounded hover:bg-slate-800">
-                                            <i data-lucide="user-cog" class="w-3 h-3"></i>
+                                        <button @click.stop="openReportingModal(root)" title="Change Reporting Line" class="p-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <i data-lucide="user-cog" class="w-3.5 h-3.5"></i>
                                         </button>
-                                        <button x-show="orgTreeRoot.children && orgTreeRoot.children.length > 0"
-                                                @click.stop="toggleNodeCollapse(orgTreeRoot.id)"
-                                                class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-mono font-bold flex items-center gap-1">
-                                            <span x-text="isNodeCollapsed(orgTreeRoot.id) ? '+' : '&minus;'"></span>
+                                        <button x-show="root.children && root.children.length > 0"
+                                                @click.stop="toggleNodeCollapse(root.id)"
+                                                class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-mono font-bold">
+                                            <span x-text="isNodeCollapsed(root.id) ? '+' : '&minus;'"></span>
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Connector Line Down -->
-                            <div x-show="!isNodeCollapsed(orgTreeRoot.id) && orgTreeRoot.children && orgTreeRoot.children.length > 0" class="org-line-vertical"></div>
+                            <!-- Vertical Line Down from Root -->
+                            <div x-show="!isNodeCollapsed(root.id) && root.children && root.children.length > 0" class="org-line-down-parent"></div>
 
-                            <!-- Level 1 Subordinates (Branch Row) -->
-                            <div x-show="!isNodeCollapsed(orgTreeRoot.id) && orgTreeRoot.children && orgTreeRoot.children.length > 0"
-                                 class="flex items-start justify-center pt-0 relative">
-                                
-                                <template x-for="(lvl1, idx1) in orgTreeRoot.children" :key="lvl1.id">
-                                    <div class="flex flex-col items-center px-4 relative">
-                                        
-                                        <!-- Top vertical connector to parent branch line -->
-                                        <div class="org-line-vertical"></div>
-
-                                        <!-- Level 1 Card -->
-                                        <div class="org-node-card w-64 bg-slate-900 border rounded-xl p-3 shadow-lg relative cursor-pointer"
-                                             :class="lvl1._matchesSearch ? 'border-brand-500/60 ring-2 ring-brand-500/20' : 'border-slate-800'"
-                                             :style="`border-top: 3px solid ${lvl1.color || '#6366f1'};`">
+                            <!-- Recursive Children Branch (UL / LI) -->
+                            <ul x-show="!isNodeCollapsed(root.id) && root.children && root.children.length > 0">
+                                <template x-for="child in root.children" :key="child.id">
+                                    <li>
+                                        <!-- Child Card -->
+                                        <div class="org-card w-64 bg-white dark:bg-slate-900 border rounded-xl p-3 shadow-sm dark:shadow-md relative cursor-pointer"
+                                             :class="child._matchesSearch ? 'ring-2 ring-brand-500/50 border-brand-500' : 'border-slate-200 dark:border-slate-800'"
+                                             :style="`border-top: 3px solid ${child.color || '#10b981'};`">
                                             
-                                            <div class="flex items-start gap-2.5">
+                                            <div class="flex items-start gap-2.5 text-left">
                                                 <div class="relative shrink-0">
-                                                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-md"
-                                                         :style="`background-color: ${lvl1.color || '#4f46e5'};`">
-                                                        <span x-text="lvl1.initials"></span>
+                                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-xs"
+                                                         :style="`background-color: ${child.color || '#10b981'};`">
+                                                        <span x-text="child.initials"></span>
                                                     </div>
-                                                    <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span>
+                                                    <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white dark:ring-slate-900"></span>
                                                 </div>
 
                                                 <div class="flex-1 min-w-0">
-                                                    <h4 class="text-xs font-bold text-white truncate" x-text="lvl1.name"></h4>
-                                                    <p class="text-[10px] font-semibold text-brand-400 truncate" x-text="lvl1.role"></p>
-                                                    <span class="inline-block text-[9px] font-mono px-1 py-0.2 rounded bg-slate-800 text-slate-400 mt-0.5 truncate" x-text="lvl1.team_name"></span>
+                                                    <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="child.name"></h4>
+                                                    <p class="text-[10px] font-semibold text-slate-600 dark:text-slate-300 truncate" x-text="child.role"></p>
+                                                    <span class="inline-block text-[9px] font-mono px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 mt-0.5 truncate" x-text="child.team_name"></span>
                                                 </div>
                                             </div>
 
-                                            <div class="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9px]">
-                                                <span class="text-slate-400 flex items-center gap-1 font-mono">
-                                                    <i data-lucide="users" class="w-2.5 h-2.5 text-slate-500"></i>
-                                                    <span x-text="`${lvl1.direct_reports_count} reports`"></span>
-                                                </span>
-
+                                            <div class="mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[9px]">
+                                                <span class="text-slate-400 font-mono" x-text="child.direct_reports_count > 0 ? `${child.direct_reports_count} reports` : 'Member'"></span>
                                                 <div class="flex items-center gap-1">
-                                                    <button @click.stop="openReportingModal(lvl1)" title="Change Reporting Line" class="p-0.5 text-slate-400 hover:text-brand-400">
+                                                    <button @click.stop="openReportingModal(child)" title="Change Reporting Line" class="p-0.5 text-slate-400 hover:text-brand-600">
                                                         <i data-lucide="user-cog" class="w-3 h-3"></i>
                                                     </button>
-                                                    <button x-show="lvl1.children && lvl1.children.length > 0"
-                                                            @click.stop="toggleNodeCollapse(lvl1.id)"
-                                                            class="px-1 py-0.2 rounded bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-mono font-bold text-[9px]">
-                                                        <span x-text="isNodeCollapsed(lvl1.id) ? '+' : '&minus;'"></span>
+                                                    <button x-show="child.children && child.children.length > 0"
+                                                            @click.stop="toggleNodeCollapse(child.id)"
+                                                            class="px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold font-mono">
+                                                        <span x-text="isNodeCollapsed(child.id) ? '+' : '&minus;'"></span>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Connector down to Level 2 -->
-                                        <div x-show="!isNodeCollapsed(lvl1.id) && lvl1.children && lvl1.children.length > 0" class="org-line-vertical"></div>
-
-                                        <!-- Level 2 Subordinates -->
-                                        <div x-show="!isNodeCollapsed(lvl1.id) && lvl1.children && lvl1.children.length > 0"
-                                             class="flex items-start justify-center pt-0">
-                                            
-                                            <template x-for="lvl2 in lvl1.children" :key="lvl2.id">
-                                                <div class="flex flex-col items-center px-2">
-                                                    <div class="org-line-vertical"></div>
-
-                                                    <!-- Level 2 Card (Team Contributors) -->
-                                                    <div class="org-node-card w-56 bg-slate-900/95 border rounded-lg p-2.5 shadow-md relative"
-                                                         :class="lvl2._matchesSearch ? 'border-brand-500/60 ring-1 ring-brand-500/20' : 'border-slate-800'"
-                                                         :style="`border-left: 3px solid ${lvl2.color || '#10b981'};`">
-                                                        
+                                        <!-- Sub-children if any (Level 2+) -->
+                                        <ul x-show="!isNodeCollapsed(child.id) && child.children && child.children.length > 0">
+                                            <template x-for="subChild in child.children" :key="subChild.id">
+                                                <li>
+                                                    <div class="org-card w-56 bg-white dark:bg-slate-900/95 border rounded-lg p-2.5 shadow-xs text-left"
+                                                         :class="subChild._matchesSearch ? 'ring-2 ring-brand-500/50 border-brand-500' : 'border-slate-200 dark:border-slate-800'"
+                                                         :style="`border-left: 3px solid ${subChild.color || '#3b82f6'};`">
                                                         <div class="flex items-center gap-2">
-                                                            <div class="w-7 h-7 rounded-md bg-slate-800 text-slate-200 font-bold text-[10px] flex items-center justify-center shrink-0">
-                                                                <span x-text="lvl2.initials"></span>
+                                                            <div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[9px] flex items-center justify-center shrink-0">
+                                                                <span x-text="subChild.initials"></span>
                                                             </div>
                                                             <div class="flex-1 min-w-0">
-                                                                <p class="text-[11px] font-semibold text-white truncate" x-text="lvl2.name"></p>
-                                                                <p class="text-[9px] text-slate-400 truncate" x-text="lvl2.role"></p>
+                                                                <p class="text-[11px] font-semibold text-slate-900 dark:text-white truncate" x-text="subChild.name"></p>
+                                                                <p class="text-[9px] text-slate-500 truncate" x-text="subChild.role"></p>
                                                             </div>
-                                                            <button @click.stop="openReportingModal(lvl2)" title="Change Reporting Line" class="text-slate-500 hover:text-brand-400 p-0.5">
+                                                            <button @click.stop="openReportingModal(subChild)" title="Change Reporting Line" class="text-slate-400 hover:text-brand-600 p-0.5">
                                                                 <i data-lucide="user-cog" class="w-3 h-3"></i>
                                                             </button>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </li>
                                             </template>
-                                        </div>
-                                    </div>
+                                        </ul>
+                                    </li>
                                 </template>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                            </ul>
 
-                <div x-show="!orgTreeRoot" class="p-8 text-center text-slate-500 text-xs">
-                    No team members or organizational reporting lines established yet. Use the seed command or create teams.
+                        </div>
+                    </template>
                 </div>
+
+                <!-- Empty State -->
+                <div x-show="orgTrees.length === 0 && unassignedUsers.length === 0" class="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md shadow-sm">
+                    <i data-lucide="network" class="w-10 h-10 text-slate-400 mx-auto mb-2"></i>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">No Organizational Hierarchy Defined</h3>
+                    <p class="text-xs text-slate-500 mt-1">Create teams and assign team leads to automatically generate your visual organization chart.</p>
+                </div>
+
             </div>
         </div>
 
         <!-- ================================================================= -->
-        <!-- VIEW 2: COLLAPSIBLE TREE VIEW (VS CODE / FINDER STYLE)           -->
+        <!-- VIEW 2: COLLAPSIBLE TREE VIEW                                    -->
         <!-- ================================================================= -->
-        <div x-show="!isLoading && activeTab === 'tree'" class="max-w-5xl mx-auto space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                
-                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div x-show="!isLoading && activeTab === 'tree'" class="max-w-4xl mx-auto space-y-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
-                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            <i data-lucide="folder-tree" class="w-4 h-4 text-brand-400"></i>
-                            Departmental & Team Hierarchy Tree
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Explore departments, teams, team leads, and nested direct reports.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button @click="expandAll()" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs hover:text-white border border-slate-700">Expand All</button>
-                        <button @click="collapseAll()" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs hover:text-white border border-slate-700">Collapse All</button>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Departmental Structure</h3>
+                        <p class="text-xs text-slate-500">Structured collapsible tree by department and teams</p>
                     </div>
                 </div>
 
-                <!-- Tree Root (Departments Loop) -->
-                <div class="space-y-3 font-sans">
+                <div class="space-y-3">
                     <template x-for="dept in hierarchyData.departments" :key="dept.id">
-                        <div class="border border-slate-800 rounded-xl bg-slate-950/60 overflow-hidden" x-data="{ openDept: true }">
-                            
-                            <!-- Department Header Row -->
-                            <div @click="openDept = !openDept"
-                                 class="flex items-center justify-between px-4 py-3 bg-slate-900/90 hover:bg-slate-850 cursor-pointer transition-colors border-b border-slate-800/80">
-                                <div class="flex items-center gap-2.5">
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="openDept ? 'rotate-90 text-brand-400' : ''"></i>
-                                    <div class="w-6 h-6 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-bold">
-                                        <i data-lucide="building" class="w-3.5 h-3.5"></i>
-                                    </div>
-                                    <span class="text-xs font-bold text-white" x-text="dept.name"></span>
-                                    <span class="text-[10px] font-mono text-slate-400" x-text="`(${dept.teams.length} Teams)`"></span>
-                                </div>
-
-                                <div class="flex items-center gap-3 text-xs">
-                                    <span x-show="dept.head" class="text-slate-400 text-[11px]">
-                                        Head: <strong class="text-slate-200" x-text="dept.head ? dept.head.name : ''"></strong>
-                                    </span>
+                        <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden" x-data="{ open: true }">
+                            <div @click="open = !open" class="p-3 bg-slate-50 dark:bg-slate-850 flex items-center justify-between cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <i :data-lucide="open ? 'chevron-down' : 'chevron-right'" class="w-4 h-4 text-slate-400"></i>
+                                    <span class="font-bold text-xs text-slate-900 dark:text-white" x-text="dept.name"></span>
+                                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300" x-text="`${dept.teams.length} teams`"></span>
                                 </div>
                             </div>
-
-                            <!-- Department Teams List -->
-                            <div x-show="openDept" class="p-3 pl-8 space-y-2.5">
-                                <template x-for="team in dept.teams" :key="team.id">
-                                    <div class="border border-slate-800/80 rounded-lg bg-slate-900/50 p-3 space-y-2" x-data="{ openTeam: true }">
-                                        
-                                        <!-- Team Row -->
-                                        <div @click="openTeam = !openTeam" class="flex items-center justify-between cursor-pointer">
-                                            <div class="flex items-center gap-2">
-                                                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500 transition-transform" :class="openTeam ? 'rotate-90 text-emerald-400' : ''"></i>
-                                                <span class="w-2.5 h-2.5 rounded-full" :style="`background-color: ${team.color || '#6366f1'};`"></span>
-                                                <span class="text-xs font-bold text-slate-200" x-text="team.name"></span>
-                                                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400" x-text="`${team.members_count} Members`"></span>
-                                            </div>
-
-                                            <div class="flex items-center gap-2">
-                                                <a :href="`/teams/${team.id}/`" @click.stop class="text-[10px] text-brand-400 hover:text-brand-300 font-semibold px-2 py-0.5 rounded bg-brand-500/10 border border-brand-500/20">
-                                                    Manage Team &rarr;
-                                                </a>
+                            <div x-show="open" class="p-3 space-y-2 bg-white dark:bg-slate-900">
+                                <template x-for="t in dept.teams" :key="t.id">
+                                    <div class="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2.5 h-2.5 rounded-full" :style="`background-color: ${t.color || '#6366f1'};`"></span>
+                                            <div>
+                                                <span class="text-xs font-bold text-slate-900 dark:text-white" x-text="t.name"></span>
+                                                <p class="text-[10px] text-slate-500" x-text="t.lead ? `Lead: ${t.lead.name}` : 'No lead'"></p>
                                             </div>
                                         </div>
-
-                                        <!-- Team Members List -->
-                                        <div x-show="openTeam" class="pl-6 pt-2 space-y-1.5 border-t border-slate-800/60">
-                                            <template x-for="mem in team.members" :key="mem.id">
-                                                <div class="flex items-center justify-between py-1 px-2.5 rounded hover:bg-slate-800/60 transition-colors text-xs">
-                                                    <div class="flex items-center gap-2">
-                                                        <div class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 text-[9px] font-bold flex items-center justify-center" x-text="mem.initials"></div>
-                                                        <span class="text-slate-200 font-medium" x-text="mem.name"></span>
-                                                        <span class="text-[10px] text-slate-400 font-mono" x-text="`(@${mem.username})`"></span>
-                                                        <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700" x-text="mem.role"></span>
-                                                    </div>
-
-                                                    <span x-show="mem.reporting_to" class="text-[10px] text-slate-400 font-mono">
-                                                        Reports to: <strong class="text-slate-300" x-text="mem.reporting_to"></strong>
-                                                    </span>
-                                                </div>
-                                            </template>
-                                        </div>
+                                        <span class="text-[10px] font-mono text-slate-400" x-text="`${t.members_count} members`"></span>
                                     </div>
                                 </template>
                             </div>
@@ -396,53 +472,57 @@
         <div x-show="!isLoading && activeTab === 'directory'" class="max-w-7xl mx-auto space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {% for t in teams %}
-                <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 transition-all hover:-translate-y-1">
+                <div class="bg-white border border-slate-200 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 rounded-2xl p-5 shadow-sm dark:shadow-lg flex flex-col justify-between space-y-4 transition-all hover:-translate-y-1">
                     <div class="space-y-3">
                         <div class="flex items-start justify-between gap-2">
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full" style="background-color: {{ t.color }};"></span>
-                                <h3 class="text-sm font-bold text-white">{{ t.name }}</h3>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ t.name }}</h3>
                             </div>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
                                 {{ t.department.name|default:"General" }}
                             </span>
                         </div>
 
-                        <p class="text-xs text-slate-400 line-clamp-2">{{ t.description|default:"No description provided." }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{{ t.description|default:"No description provided." }}</p>
 
                         <!-- Lead Info -->
-                        <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs">
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/70 dark:border-slate-800/80 flex items-center justify-between text-xs">
                             <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-brand-600/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-xs">
+                                <div class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-200 dark:bg-brand-600/20 dark:text-brand-400 dark:border-brand-500/30 flex items-center justify-center font-bold text-xs">
                                     {{ t.lead.first_name|first|default:t.lead.username|first|upper }}
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-slate-500 font-semibold uppercase">Team Lead</p>
-                                    <p class="text-xs font-semibold text-slate-200">{{ t.lead.get_full_name|default:t.lead.username|default:"Unassigned" }}</p>
+                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ t.lead.get_full_name|default:t.lead.username|default:"Unassigned" }}</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-mono text-slate-400">{{ t.members_count }} Members</span>
+                            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">{{ t.members_count }} Members</span>
                         </div>
                     </div>
 
                     <!-- Card Actions -->
-                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <span class="text-[10px] text-slate-500 font-mono">{{ t.assigned_projects.count }} Active Projects</span>
                         <div class="flex items-center gap-1.5">
-                            <a href="{% url 'teams:team_edit' pk=t.pk %}" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Edit Team">
+                            <a href="{% url 'teams:team_edit' pk=t.pk %}" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Edit Team">
                                 <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                             </a>
-                            <a href="{% url 'teams:team_detail' pk=t.pk %}" class="px-3 py-1 rounded-lg bg-brand-600/10 text-brand-400 hover:bg-brand-600/20 border border-brand-500/20 text-xs font-semibold transition-colors">
+                            <a href="{% url 'teams:team_detail' pk=t.pk %}" class="px-3 py-1 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-600/10 dark:text-brand-400 dark:hover:bg-brand-600/20 border border-brand-200 dark:border-brand-500/20 text-xs font-semibold transition-colors">
                                 View Team &rarr;
                             </a>
                         </div>
                     </div>
                 </div>
                 {% empty %}
-                <div class="col-span-3 p-12 text-center bg-slate-900 border border-slate-800 rounded-2xl">
-                    <i data-lucide="users" class="w-10 h-10 text-slate-600 mx-auto mb-3"></i>
-                    <h3 class="text-sm font-bold text-white">No Teams Created Yet</h3>
-                    <p class="text-xs text-slate-400 mt-1">Get started by creating your first organizational team.</p>
+                <div class="col-span-3 p-12 text-center bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl shadow-sm space-y-4">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-500/20 flex items-center justify-center mx-auto shadow-sm">
+                        <i data-lucide="users" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">No Teams Created Yet</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Get started by creating your first organizational team.</p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -454,14 +534,14 @@
     <!-- ===================================================================== -->
     
     <!-- MODAL 1: CREATE TEAM -->
-    <div x-show="showAddTeamModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div @click.away="showAddTeamModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="users" class="w-4 h-4 text-brand-400"></i>
+    <div x-show="showAddTeamModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="showAddTeamModal = false" class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-xs text-slate-800 dark:text-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
                     Create New Team
                 </h3>
-                <button @click="showAddTeamModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showAddTeamModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -469,54 +549,54 @@
             <form action="{% url 'teams:team_create' %}" method="POST" class="space-y-4">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Team Name *</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Team Name *</label>
                     {{ team_form.name }}
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Department</label>
+                        <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Department</label>
                         {{ team_form.department }}
                     </div>
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Parent Team (Sub-Team)</label>
+                        <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Parent Team (Sub-Team)</label>
                         {{ team_form.parent_team }}
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Team Lead</label>
+                        <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Team Lead</label>
                         {{ team_form.lead }}
                     </div>
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Theme Color</label>
+                        <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Theme Color</label>
                         {{ team_form.color }}
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Description</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Description</label>
                     {{ team_form.description }}
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                    <button type="button" @click="showAddTeamModal = false" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white font-medium">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-lg shadow-brand-500/20">Create Team</button>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddTeamModal = false" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white font-medium">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-md shadow-brand-500/20">Create Team</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 2: CREATE DEPARTMENT -->
-    <div x-show="showAddDeptModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div @click.away="showAddDeptModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="building" class="w-4 h-4 text-indigo-400"></i>
+    <div x-show="showAddDeptModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="showAddDeptModal = false" class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs text-slate-800 dark:text-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="building" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
                     Create Department
                 </h3>
-                <button @click="showAddDeptModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showAddDeptModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -524,24 +604,24 @@
             <form action="{% url 'teams:department_create' %}" method="POST" class="space-y-4">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Department Name *</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Department Name *</label>
                     {{ dept_form.name }}
                 </div>
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Parent Department</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Parent Department</label>
                     {{ dept_form.parent }}
                 </div>
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Department Head</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Department Head</label>
                     {{ dept_form.head }}
                 </div>
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Description</label>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Description</label>
                     {{ dept_form.description }}
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                    <button type="button" @click="showAddDeptModal = false" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white font-medium">Cancel</button>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="showAddDeptModal = false" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white font-medium">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Create Department</button>
                 </div>
             </form>
@@ -549,46 +629,46 @@
     </div>
 
     <!-- MODAL 3: REASSIGN REPORTING LINE -->
-    <div x-show="showReportingModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div @click.away="showReportingModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="user-cog" class="w-4 h-4 text-brand-400"></i>
+    <div x-show="showReportingModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="showReportingModal = false" class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs text-slate-800 dark:text-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="user-cog" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
                     Update Reporting Line
                 </h3>
-                <button @click="showReportingModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showReportingModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <div class="space-y-3">
-                <p class="text-slate-300">
-                    Select the direct manager/lead for <strong class="text-white" x-text="reportingForm.user_name"></strong>:
+                <p class="text-slate-700 dark:text-slate-300">
+                    Select the direct manager/lead for <strong class="text-slate-900 dark:text-white" x-text="reportingForm.user_name"></strong>:
                 </p>
 
                 <div>
-                    <label class="block text-slate-400 font-medium mb-1">Reports To (Manager)</label>
+                    <label class="block text-slate-600 dark:text-slate-400 font-medium mb-1">Reports To (Manager)</label>
                     <select x-model="reportingForm.new_manager_id"
-                            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        <option value="">-- No Direct Manager (Top Executive / Independent) --</option>
-                        {% for u in all_users %}
-                        <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} (@{{ u.username }})</option>
-                        {% endfor %}
+                            class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="">-- No Direct Manager (Top Executive GM) --</option>
+                        <template x-for="m in getValidManagersForRole(reportingForm.role_code, reportingForm.user_id)" :key="m.id">
+                            <option :value="m.id" :selected="reportingForm.new_manager_id == m.id" x-text="`${m.name} (@${m.username}) - ${m.role}`"></option>
+                        </template>
                     </select>
                 </div>
             </div>
 
-            <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <button type="button" @click="showReportingModal = false" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white font-medium">Cancel</button>
-                <button type="button" @click="saveReportingLine()" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold">Save Reporting Line</button>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button type="button" @click="showReportingModal = false" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white font-medium">Cancel</button>
+                <button type="button" @click="saveReportingLine()" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-md shadow-brand-500/20">Save Reporting Line</button>
             </div>
         </div>
     </div>
 
     <!-- Toast Notification -->
     <div x-show="showToastNotification" x-cloak
-         class="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 border border-brand-500/40 text-white text-xs shadow-2xl shadow-brand-500/20">
-        <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-400"></i>
+         class="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-white border border-brand-500/40 text-slate-800 dark:bg-slate-900 dark:text-white text-xs shadow-2xl shadow-brand-500/20">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
         <span x-text="toastMessage"></span>
     </div>
 </div>

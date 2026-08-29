@@ -300,6 +300,35 @@
         {% endif %}
     </div>
 
+    <!-- Quick Initialize / Seed Demo Data Panel -->
+    <div class="db-card" style="border: 1px solid rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #1e293b 100%);">
+        <div class="db-header" style="border-bottom: 1px solid rgba(16, 185, 129, 0.3);">
+            <h2 style="color: #34d399;">
+                <span>🌱 Initialize Sample & Demo Data</span>
+            </h2>
+        </div>
+
+        <p style="font-size: 13px; color: #cbd5e1; margin-top: 0; line-height: 1.5;">
+            Quickly populate or restore the database with structured sample data, organization team hierarchy, and full Indian Standard (INR ₹) project schedules.
+        </p>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+            <form method="POST" action="{% url 'admin:database_seed_teams' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action btn-primary" onclick="return confirm('Initialize demo team hierarchy structure with Sundar Nadar as reporting manager?');">
+                    🌱 Initialize Demo Teams Hierarchy
+                </button>
+            </form>
+
+            <form method="POST" action="{% url 'admin:database_seed_projects' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action btn-secondary" onclick="return confirm('Populate sample Indian Standard INR (Rs) projects, WBS tasks, and EVM baselines?');">
+                    📊 Populate Full Sample Projects & Tasks
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Danger Zone: Clear Database -->
     <div class="db-card" style="border: 1px solid rgba(239, 68, 68, 0.4); background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, #1e293b 100%);">
         <div class="db-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.3);">
@@ -310,7 +339,7 @@
 
         <p style="font-size: 13px; color: #cbd5e1; margin-top: 0; line-height: 1.5;">
             Clearing the database permanently purges all <strong>Projects</strong>, <strong>WBS Tasks</strong>, <strong>Dependencies</strong>, 
-            <strong>Project Members</strong>, <strong>Comments</strong>, and <strong>Activity Logs</strong>.
+            <strong>Teams</strong>, <strong>Departments</strong>, <strong>Memberships</strong>, and <strong>Activity Logs</strong>.
         </p>
 
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 18px;">
@@ -333,12 +362,12 @@
 
                 <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; cursor: pointer; margin-top: 4px;">
                     <input type="checkbox" name="remove_non_admin_users" value="1" style="width: 15px; height: 15px; accent-color: #ef4444;">
-                    <span>Also remove created team members (keep only master admin <code>aman</code>)</span>
+                    <span>Also remove created user accounts (keep only master admin <code>aman</code>)</span>
                 </label>
 
                 <div>
-                    <button type="submit" class="btn-action btn-danger" onclick="return confirm('⚠️ FINAL CONFIRMATION: Are you absolutely sure you want to clear all project and task records? An automatic rollback backup will be saved.');">
-                        🧹 Purge All Project Records & Clear Database
+                    <button type="submit" class="btn-action btn-danger" onclick="return confirm('⚠️ FINAL CONFIRMATION: Are you absolutely sure you want to clear all records? An automatic rollback backup will be saved.');">
+                        🧹 Purge All Records & Reset Database
                     </button>
                 </div>
             </div>

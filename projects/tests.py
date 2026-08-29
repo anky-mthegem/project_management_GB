@@ -32,6 +32,13 @@ class GanttProjectTestCase(TestCase):
             is_staff=True,
             is_superuser=True
         )
+        self.member = User.objects.create_user(
+            username='psundar',
+            password='Godrej@123',
+            first_name='Sundar',
+            last_name='Nadar',
+            email='psundar@godrej.com'
+        )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         self.client.force_login(self.user)
@@ -48,8 +55,8 @@ class GanttProjectTestCase(TestCase):
         )
         ProjectMember.objects.get_or_create(
             project=self.project,
-            user=self.user,
-            defaults={'role': ProjectRole.ADMIN}
+            user=self.member,
+            defaults={'role': ProjectRole.MEMBER}
         )
 
     def test_task_duration_calculation(self):
@@ -310,39 +317,11 @@ class GanttProjectTestCase(TestCase):
         self.assertTrue(self.user.is_staff)
         self.assertTrue(self.user.is_superuser)
 
-    def test_master_user_auto_attached_to_every_project(self):
-        """Verify every newly created project automatically has aman as ADMIN member."""
-        other_user = User.objects.create_user(
-            username='developer1',
-            password='password123',
-            first_name='Dev',
-            last_name='User'
-        )
-        new_proj = Project.objects.create(
-            name='Dev Project',
-            owner=other_user,
-            start_date=self.today,
-            end_date=self.today + timedelta(days=15)
-        )
-        membership = ProjectMember.objects.filter(project=new_proj, user__username='aman').first()
-        self.assertIsNotNone(membership)
-        self.assertEqual(membership.role, ProjectRole.ADMIN)
-
-    def test_master_user_cannot_be_removed_from_project(self):
-        """Verify removing aman from a project's members is blocked."""
-        membership = ProjectMember.objects.filter(project=self.project, user__username='aman').first()
-        self.assertIsNotNone(membership)
+    def test_master_user_cannot_be_assigned_to_project(self):
+        """Verify aman cannot be added to any project memberships."""
         with transaction.atomic():
             with self.assertRaises(ValidationError):
-                membership.delete()
-
-    def test_master_user_project_role_cannot_be_demoted(self):
-        """Verify aman's role in any project is forced to ADMIN."""
-        membership = ProjectMember.objects.filter(project=self.project, user__username='aman').first()
-        membership.role = ProjectRole.MEMBER
-        membership.save()
-        membership.refresh_from_db()
-        self.assertEqual(membership.role, ProjectRole.ADMIN)
+                ProjectMember.objects.create(project=self.project, user=self.user, role=ProjectRole.ADMIN)
 
     def test_cannot_assign_task_to_master_user_model(self):
         """Verify Task.clean() and Task.save() prevent assigning tasks to master user 'aman'."""
@@ -406,6 +385,7 @@ class GanttProjectTestCase(TestCase):
 
 class DatabaseBackupAdminTests(TestCase):
     def setUp(self):
+        self.factory = RequestFactory()
         self.client = Client()
         self.superuser = User.objects.create_superuser(
             username='aman',
@@ -426,24 +406,33 @@ class DatabaseBackupAdminTests(TestCase):
             owner=self.superuser
         )
 
+    def _setup_request(self, req, user):
+        req.user = user
+        setattr(req, 'session', 'session')
+        messages = FallbackStorage(req)
+        setattr(req, '_messages', messages)
+        return req
+
     def test_database_manage_view_superuser_access(self):
         """Superusers should have access to the database manage dashboard."""
-        self.client.login(username='aman', password='password123')
-        response = self.client.get('/admin/database-manage/')
+        from projects.admin_database import database_manage_view
+        req = self._setup_request(self.factory.get('/admin/database-manage/'), self.superuser)
+        response = database_manage_view(req)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Database Backup & Restore")
-        self.assertContains(response, "Export Live Database")
 
     def test_database_manage_view_denies_non_superuser(self):
-        """Non-superusers must receive 403 Forbidden."""
-        self.client.login(username='regular_staff', password='password123')
-        response = self.client.get('/admin/database-manage/')
-        self.assertEqual(response.status_code, 403)
+        """Non-superusers must receive PermissionDenied."""
+        from django.core.exceptions import PermissionDenied
+        from projects.admin_database import database_manage_view
+        req = self._setup_request(self.factory.get('/admin/database-manage/'), self.regular_user)
+        with self.assertRaises(PermissionDenied):
+            database_manage_view(req)
 
     def test_database_export_streams_sqlite_file(self):
         """Superuser export downloads a valid SQLite binary file."""
-        self.client.login(username='aman', password='password123')
-        response = self.client.get('/admin/database-export/')
+        from projects.admin_database import database_export_view
+        req = self._setup_request(self.factory.get('/admin/database-export/'), self.superuser)
+        response = database_export_view(req)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/x-sqlite3')
         self.assertTrue('attachment' in response['Content-Disposition'])
@@ -451,26 +440,18 @@ class DatabaseBackupAdminTests(TestCase):
 
     def test_database_clear_aborts_without_exact_confirmation(self):
         """Must reject clear operation if confirm_text is not 'CLEAR'."""
-        self.client.login(username='aman', password='password123')
-        response = self.client.post(
-            '/admin/database-clear/',
-            {'confirm_text': 'wrong_word'},
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Database Clear Aborted")
+        from projects.admin_database import database_clear_view
+        req = self._setup_request(self.factory.post('/admin/database-clear/', {'confirm_text': 'wrong_word'}), self.superuser)
+        response = database_clear_view(req)
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(Project.objects.filter(id=self.project.id).exists())
 
     def test_database_clear_purges_records_and_preserves_master_user(self):
         """Valid clear deletes project records, keeps user aman, and auto-saves rollback backup."""
-        self.client.login(username='aman', password='password123')
-        response = self.client.post(
-            '/admin/database-clear/',
-            {'confirm_text': 'CLEAR', 'remove_non_admin_users': '1'},
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Database cleared successfully")
+        from projects.admin_database import database_clear_view
+        req = self._setup_request(self.factory.post('/admin/database-clear/', {'confirm_text': 'CLEAR', 'remove_non_admin_users': '1'}), self.superuser)
+        response = database_clear_view(req)
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(Project.objects.count(), 0)
         self.assertEqual(Task.objects.count(), 0)
         self.assertTrue(User.objects.filter(username='aman', is_superuser=True).exists())

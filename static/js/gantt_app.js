@@ -109,6 +109,13 @@ window.ganttApp = function(projectId) {
             this.initGantt();
             if (window.lucide) lucide.createIcons();
 
+            // Re-render / refresh chart if theme changes
+            window.addEventListener('theme-changed', () => {
+                if (this.activeWorkspaceView === 'gantt') {
+                    this.refreshGanttChart();
+                }
+            });
+
             // Auto-refresh icons when switching workspace views
             this.$watch('activeWorkspaceView', (newVal) => {
                 if (newVal === 'gantt') {

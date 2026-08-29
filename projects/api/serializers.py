@@ -34,6 +34,11 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
         model = ProjectMember
         fields = ['id', 'project', 'user', 'user_detail', 'role', 'created_at']
 
+    def validate_user(self, value):
+        if value and value.username.lower() == 'aman':
+            raise serializers.ValidationError("Master administrator 'aman' cannot be assigned to project memberships.")
+        return value
+
 
 class TaskCommentSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField()
@@ -166,14 +171,14 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
 
     def validate_assignee(self, value):
-        if value and value.username == 'aman':
-            raise serializers.ValidationError("Master user 'aman' is reserved for administration only and cannot be assigned to tasks.")
+        if value and value.username.lower() == 'aman':
+            raise serializers.ValidationError("Master administrator 'aman' is reserved for administration only and cannot be assigned to tasks.")
         return value
 
     def validate(self, attrs):
         assignee = attrs.get('assignee', self.instance.assignee if self.instance else None)
-        if assignee and assignee.username == 'aman':
-            raise serializers.ValidationError({"assignee": "Master user 'aman' is reserved for administration only and cannot be assigned to tasks."})
+        if assignee and assignee.username.lower() == 'aman':
+            raise serializers.ValidationError({"assignee": "Master administrator 'aman' is reserved for administration only and cannot be assigned to tasks."})
 
         start_date = attrs.get('start_date', self.instance.start_date if self.instance else None)
         end_date = attrs.get('end_date', self.instance.end_date if self.instance else None)

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Pending Approval - Milestone Management{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-[calc(100vh-3.5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div class="max-w-lg w-full bg-white/95 dark:bg-slate-900/90 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl backdrop-blur-xl text-center space-y-6">
+        
+        <!-- Status Icon -->
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center shadow-lg shadow-amber-500/10">
+            <i data-lucide="clock" class="w-8 h-8 animate-pulse"></i>
+        </div>
+
+        <div>
+            <span class="inline-block text-[11px] font-mono uppercase px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-700/50 mb-2">
+                Pending Administrator Approval
+            </span>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Account Provisioning Required
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-md mx-auto">
+                Thank you for registering. Your account is currently in a <strong>Pending Approval</strong> state.
+            </p>
+        </div>
+
+        <!-- Details Card -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-left space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span class="text-slate-500">Applicant:</span>
+                <strong class="text-slate-900 dark:text-white">{{ pending_username|default:"Registered User" }}</strong>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span class="text-slate-500">System Approver:</span>
+                <span class="font-bold text-brand-600 dark:text-brand-400">@aman (System Administrator)</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-500">Access Level:</span>
+                <span class="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-mono">Restricted until Provisioned</span>
+            </div>
+        </div>
+
+        <!-- Guidance Note -->
+        <div class="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 text-[11px] text-blue-800 dark:text-blue-300 flex items-start gap-2.5 text-left">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"></i>
+            <span>Once administrator <strong>@aman</strong> reviews your registration and assigns your Department, 3-Tier Role, and Team, you will be able to sign in immediately.</span>
+        </div>
+
+        <div class="pt-2 flex items-center justify-center gap-3">
+            <a href="{% url 'login' %}"
+               class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white font-semibold text-xs transition-colors">
+                Back to Sign In
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,115 +3,55 @@
 {% block title %}Sign In - Milestone Management{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-3.5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"
+<div class="min-h-[calc(100vh-3.5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
      x-data="{ 
-         showTrialDialog: true,
          fillTrial() {
              document.getElementById('username').value = 'skhande';
              document.getElementById('password').value = 'Godrej@123';
-             this.showTrialDialog = false;
          },
          fillMaster() {
              document.getElementById('username').value = 'aman';
              document.getElementById('password').value = '123456';
-             this.showTrialDialog = false;
          }
      }">
 
-    <!-- Temporary Trial Login Credentials Dialog Modal -->
-    <div x-show="showTrialDialog" x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
-         @keydown.escape.window="showTrialDialog = false">
-        
-        <div class="relative w-full max-w-md bg-slate-900 border border-brand-500/40 rounded-2xl p-6 shadow-2xl shadow-brand-500/20 space-y-4 animate-in fade-in zoom-in duration-200"
-             @click.away="showTrialDialog = false">
-            
-            <!-- Top Tag & Close Button -->
-            <div class="flex items-center justify-between">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-500/20 border border-brand-500/40 text-brand-300 text-[11px] font-bold">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span>Temporary Trial Credentials</span>
-                </div>
-                <button type="button" @click="showTrialDialog = false" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div class="space-y-1.5">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="key-round" class="w-4 h-4 text-emerald-400"></i>
-                    Trial Account Access
-                </h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    You can use the following trial login credentials to test and explore the Milestone Management system:
-                </p>
-            </div>
-
-            <!-- Credentials Box -->
-            <div class="p-3.5 bg-slate-850 rounded-xl border border-slate-700/80 space-y-2 font-mono text-xs">
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Trial Login ID:</span>
-                    <span class="text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">skhande</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Password:</span>
-                    <span class="text-brand-300 font-bold px-2 py-0.5 rounded bg-brand-500/10 border border-brand-500/20">Godrej@123</span>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-2.5 pt-1">
-                <button type="button" @click="fillTrial()"
-                        class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-500/25 transition-all">
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                    <span>Auto-Fill & Continue</span>
-                </button>
-                <button type="button" @click="showTrialDialog = false"
-                        class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 transition-colors">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Login Card -->
-    <div class="max-w-md w-full space-y-5 bg-slate-900/90 p-7 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-xl">
+    <div class="max-w-md w-full space-y-5 bg-white/95 dark:bg-slate-900/90 p-7 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl backdrop-blur-xl">
         
         <!-- Header -->
         <div class="text-center">
             <div class="mx-auto mb-3 flex justify-center">
-                <img src="/static/img/logo.png" alt="Milestone Management Logo" class="h-20 w-auto object-contain drop-shadow-2xl rounded-2xl p-1 bg-white/95 border border-slate-700/40 shadow-brand-500/10">
+                <img src="/static/img/logo.png" alt="Milestone Management Logo" class="h-20 w-auto object-contain drop-shadow-md rounded-2xl p-1 bg-white border border-slate-200 dark:border-slate-700/40">
             </div>
-            <h2 class="text-xl font-extrabold text-white tracking-tight">
+            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Sign in to your account
             </h2>
-            <p class="text-xs text-slate-400 mt-1">Enterprise Project & Milestone Management</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Enterprise Project & Milestone Management</p>
         </div>
 
         <!-- Login Form -->
         <form class="mt-5 space-y-3.5" method="POST" action="{% url 'login' %}">
             {% csrf_token %}
             <div>
-                <label for="username" class="block text-xs font-medium text-slate-300 mb-1">Username</label>
+                <label for="username" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Username</label>
                 <div class="relative rounded-lg shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <i data-lucide="user" class="w-4 h-4"></i>
                     </div>
                     <input id="username" name="username" type="text" required autofocus
-                           class="block w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                           class="block w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                            placeholder="Enter username">
                 </div>
             </div>
 
             <div>
-                <label for="password" class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                <label for="password" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
                 <div class="relative rounded-lg shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <i data-lucide="lock" class="w-4 h-4"></i>
                     </div>
                     <input id="password" name="password" type="password" required
-                           class="block w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                           class="block w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                            placeholder="••••••••">
                 </div>
             </div>
@@ -125,49 +65,10 @@
             </div>
         </form>
 
-        <!-- Quick Login Credentials Cards -->
-        <div class="space-y-2 pt-1">
-            <!-- Trial Account Banner -->
-            <div class="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl space-y-1 text-xs">
-                <div class="flex items-center justify-between">
-                    <span class="font-semibold text-emerald-300 flex items-center gap-1.5 text-[11px]">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-400"></i>
-                        Trial Login Account
-                    </span>
-                    <button type="button" @click="fillTrial()"
-                            class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 transition-colors">
-                        Auto-Fill
-                    </button>
-                </div>
-                <div class="text-[11px] text-slate-300 font-mono flex items-center justify-between">
-                    <span>ID: <strong class="text-white">skhande</strong></span>
-                    <span>Pass: <strong class="text-white">Godrej@123</strong></span>
-                </div>
-            </div>
-
-            <!-- Master Admin Quick Login -->
-            <div class="p-2.5 bg-slate-850/80 border border-amber-500/30 rounded-xl space-y-1 text-xs">
-                <div class="flex items-center justify-between">
-                    <span class="font-semibold text-amber-300 flex items-center gap-1.5 text-[11px]">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
-                        Master Admin (aman)
-                    </span>
-                    <button type="button" @click="fillMaster()"
-                            class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[10px] font-bold border border-amber-500/40 transition-colors">
-                        Auto-Fill
-                    </button>
-                </div>
-                <div class="text-[11px] text-slate-400 font-mono flex items-center justify-between">
-                    <span>ID: <strong class="text-slate-200">aman</strong></span>
-                    <span>Pass: <strong class="text-slate-200">123456</strong></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center pt-2 border-t border-slate-800">
-            <p class="text-xs text-slate-400">
+        <div class="text-center pt-2 border-t border-slate-200 dark:border-slate-800">
+            <p class="text-xs text-slate-500 dark:text-slate-400">
                 Don't have an account?
-                <a href="{% url 'register' %}" class="font-medium text-brand-400 hover:text-brand-300">
+                <a href="{% url 'register' %}" class="font-medium text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300">
                     Create new account
                 </a>
             </p>

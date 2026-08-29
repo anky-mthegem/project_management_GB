@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 
+# Python 3.14 Django Compatibility Patch
+import gantt_app.py314_compat  # noqa
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

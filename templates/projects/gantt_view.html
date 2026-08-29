@@ -3,35 +3,35 @@
 {% block title %}{{ project.name }} - Milestone Management{% endblock %}
 
 {% block content %}
-<div class="flex-1 flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-slate-950 text-slate-200"
+<div class="flex-1 flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-150"
      x-data="ganttApp({{ project.id }})"
      x-init="initApp()">
 
     <!-- Top Ribbon / Project Header -->
-    <div class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 z-20">
+    <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 z-20 shadow-sm transition-colors duration-150">
         
         <!-- Left: Project Info & Switcher & Workspace Tabs -->
         <div class="flex items-center space-x-3">
             <!-- Project Selector Dropdown -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open"
-                        class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-700 text-xs font-semibold text-white transition-colors">
-                    <span class="w-2 h-2 rounded-full {% if project.status == 'ACTIVE' %}bg-emerald-400 animate-pulse{% elif project.status == 'PLANNING' %}bg-indigo-400{% else %}bg-amber-400{% endif %}"></span>
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-white transition-colors">
+                    <span class="w-2 h-2 rounded-full {% if project.status == 'ACTIVE' %}bg-emerald-500 dark:bg-emerald-400 animate-pulse{% elif project.status == 'PLANNING' %}bg-indigo-500 dark:bg-indigo-400{% else %}bg-amber-500 dark:bg-amber-400{% endif %}"></span>
                     <span class="truncate max-w-[170px]">{{ project.name }}</span>
-                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i>
                 </button>
 
                 <div x-show="open" @click.away="open = false" x-cloak
-                     class="absolute left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-50 text-xs">
-                    <div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                     class="absolute left-0 mt-1.5 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-1 z-50 text-xs">
+                    <div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
                         Switch Project
                     </div>
                     <div class="max-h-48 overflow-y-auto">
                         {% for p in all_projects %}
                         <a href="{% url 'project_gantt' code=p.code %}"
-                           class="flex items-center justify-between px-3 py-2 hover:bg-slate-800 transition-colors {% if p.id == project.id %}bg-brand-600/20 text-brand-300 font-semibold{% else %}text-slate-300{% endif %}">
+                           class="flex items-center justify-between px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors {% if p.id == project.id %}bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-300 font-semibold{% else %}text-slate-700 dark:text-slate-300{% endif %}">
                             <span class="truncate">{{ p.name }}</span>
-                            <span class="text-[10px] font-mono text-slate-500">{{ p.code }}</span>
+                            <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">{{ p.code }}</span>
                         </a>
                         {% endfor %}
                     </div>
@@ -39,33 +39,33 @@
             </div>
 
             <!-- Workspace View Switcher Tabs -->
-            <div class="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+            <div class="flex items-center bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 <button @click="activeWorkspaceView = 'gantt'"
-                        :class="activeWorkspaceView === 'gantt' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                        :class="activeWorkspaceView === 'gantt' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition-all">
                     <i data-lucide="gantt-chart" class="w-3.5 h-3.5"></i>
                     <span>Milestones & Gantt</span>
                 </button>
                 <button @click="activeWorkspaceView = 'kanban'"
-                        :class="activeWorkspaceView === 'kanban' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                        :class="activeWorkspaceView === 'kanban' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition-all">
                     <i data-lucide="kanban" class="w-3.5 h-3.5"></i>
                     <span>Kanban</span>
                 </button>
                 <button @click="activeWorkspaceView = 'workload'"
-                        :class="activeWorkspaceView === 'workload' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                        :class="activeWorkspaceView === 'workload' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition-all">
                     <i data-lucide="users" class="w-3.5 h-3.5"></i>
                     <span>Workload</span>
                 </button>
                 <button @click="activeWorkspaceView = 'evm'"
-                        :class="activeWorkspaceView === 'evm' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                        :class="activeWorkspaceView === 'evm' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition-all">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i>
                     <span>Financials</span>
                 </button>
                 <button @click="activeWorkspaceView = 'audit'"
-                        :class="activeWorkspaceView === 'audit' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-400 hover:text-white font-medium'"
+                        :class="activeWorkspaceView === 'audit' ? 'bg-brand-600 text-white shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition-all">
                     <i data-lucide="history" class="w-3.5 h-3.5"></i>
                     <span>Audit Log</span>
@@ -77,33 +77,33 @@
         <div class="flex items-center space-x-2" x-show="activeWorkspaceView === 'gantt'">
             <!-- Critical Path CPM Toggle -->
             <button @click="toggleCriticalPath()"
-                    :class="showCriticalPath ? 'bg-rose-600/20 text-rose-300 border-rose-500/50 shadow-sm' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'"
+                    :class="showCriticalPath ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-600/20 dark:text-rose-300 dark:border-rose-500/50 shadow-sm' : 'bg-slate-100 text-slate-700 border-slate-200 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 dark:hover:text-slate-200'"
                     class="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all">
-                <i data-lucide="flame" class="w-3.5 h-3.5" :class="showCriticalPath ? 'text-rose-400' : 'text-slate-400'"></i>
+                <i data-lucide="flame" class="w-3.5 h-3.5" :class="showCriticalPath ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'"></i>
                 <span>Critical Path</span>
             </button>
 
             <!-- Baseline Toggle -->
             <button @click="showBaseline = !showBaseline; filterTasks()"
-                    :class="showBaseline ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/50 shadow-sm' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'"
+                    :class="showBaseline ? 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-600/20 dark:text-indigo-300 dark:border-indigo-500/50 shadow-sm' : 'bg-slate-100 text-slate-700 border-slate-200 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 dark:hover:text-slate-200'"
                     class="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all">
-                <i data-lucide="git-commit" class="w-3.5 h-3.5" :class="showBaseline ? 'text-indigo-400' : 'text-slate-400'"></i>
+                <i data-lucide="git-commit" class="w-3.5 h-3.5" :class="showBaseline ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'"></i>
                 <span>Baseline</span>
             </button>
 
             <!-- Zoom -->
-            <div class="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+            <div class="flex items-center bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 <button @click="changeViewMode('Day')"
-                        :class="viewMode === 'Day' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        :class="viewMode === 'Day' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         class="px-2 py-0.5 rounded-md text-[11px] font-medium transition-all">Day</button>
                 <button @click="changeViewMode('Week')"
-                        :class="viewMode === 'Week' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        :class="viewMode === 'Week' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         class="px-2 py-0.5 rounded-md text-[11px] font-medium transition-all">Week</button>
                 <button @click="changeViewMode('Month')"
-                        :class="viewMode === 'Month' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        :class="viewMode === 'Month' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         class="px-2 py-0.5 rounded-md text-[11px] font-medium transition-all">Month</button>
                 <button @click="changeViewMode('Year')"
-                        :class="viewMode === 'Year' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        :class="viewMode === 'Year' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         class="px-2 py-0.5 rounded-md text-[11px] font-medium transition-all">Year</button>
             </div>
         </div>
@@ -112,8 +112,8 @@
         <div class="flex items-center space-x-2">
             <!-- Save Baseline Button -->
             <button @click="saveBaseline()" title="Snapshot current schedule as baseline"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition-colors">
-                <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
                 <span class="hidden sm:inline">Snap Baseline</span>
             </button>
 
@@ -121,32 +121,32 @@
             <div class="relative" x-data="{ openExportMenu: false }">
                 <button @click="openExportMenu = !openExportMenu" @click.away="openExportMenu = false"
                         title="Export Gantt & Schedule"
-                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 text-xs font-medium transition-all shadow-sm">
-                    <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:hover:bg-emerald-900 border border-emerald-200 dark:border-emerald-700/70 text-emerald-800 dark:text-emerald-300 text-xs font-medium transition-all shadow-sm">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
                     <span>Export</span>
-                    <i data-lucide="chevron-down" class="w-3 h-3 text-emerald-400"></i>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-emerald-600 dark:text-emerald-400"></i>
                 </button>
 
                 <!-- Dropdown Menu -->
                 <div x-show="openExportMenu" x-cloak
-                     class="absolute right-0 mt-1.5 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 text-xs">
+                     class="absolute right-0 mt-1.5 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 text-xs">
                     <!-- Option 1: Excel with Gantt Chart Timeline -->
                     <a :href="`/api/projects/${projectId}/export-excel/`" download
-                       class="flex items-start gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 transition-colors group">
-                        <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                       class="flex items-start gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition-colors group">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"></i>
                         <div>
-                            <div class="font-semibold text-white group-hover:text-emerald-300">Excel (.xlsx) with Gantt</div>
-                            <div class="text-[10px] text-slate-400">Full visual timeline grid & EVM dashboard</div>
+                            <div class="font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300">Excel (.xlsx) with Gantt</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">Full visual timeline grid & EVM dashboard</div>
                         </div>
                     </a>
 
                     <!-- Option 2: Gantt PNG Image -->
                     <button @click="exportGanttImage(); openExportMenu = false"
-                            class="w-full flex items-start gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 transition-colors text-left group">
-                        <i data-lucide="image" class="w-4 h-4 text-brand-400 shrink-0 mt-0.5"></i>
+                            class="w-full flex items-start gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition-colors text-left group">
+                        <i data-lucide="image" class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0 mt-0.5"></i>
                         <div>
-                            <div class="font-semibold text-white group-hover:text-brand-300">Gantt Chart Image (PNG)</div>
-                            <div class="text-[10px] text-slate-400">High-resolution graphical timeline snapshot</div>
+                            <div class="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300">Gantt Chart Image (PNG)</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">High-resolution graphical timeline snapshot</div>
                         </div>
                     </button>
                 </div>
@@ -154,14 +154,14 @@
 
             <!-- Import Excel Modal Trigger -->
             <button @click="showImportModal = true" title="Import tasks from Excel (.xlsx)"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition-colors">
-                <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-slate-400"></i>
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors">
+                <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i>
                 <span class="hidden sm:inline">Import</span>
             </button>
 
             <button @click="recalculateCascades()" title="Recalculate all dependencies & critical path"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition-colors">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-brand-400" :class="{ 'animate-spin': isRecalculating }"></i>
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" :class="{ 'animate-spin': isRecalculating }"></i>
             </button>
 
             <button @click="openNewTaskModal(false)"
@@ -176,19 +176,19 @@
     <div x-show="activeWorkspaceView === 'gantt'" class="flex-1 flex flex-col overflow-hidden">
         
         <!-- Filter Bar -->
-        <div class="bg-slate-900/60 border-b border-slate-800/80 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+        <div class="bg-white dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800/80 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0 transition-colors duration-150">
             <div class="flex items-center flex-wrap gap-2.5 flex-1">
                 <!-- Search -->
                 <div class="relative min-w-[160px] max-w-[220px]">
-                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-500"></i>
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400 dark:text-slate-500"></i>
                     <input type="text" x-model="searchQuery" @input="filterTasks()"
                            placeholder="Filter tasks..."
-                           class="w-full pl-8 pr-2.5 py-1 bg-slate-800 border border-slate-700/80 rounded-md text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                           class="w-full pl-8 pr-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-md text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
                 </div>
 
                 <!-- Status Filter -->
                 <select x-model="filterStatus" @change="filterTasks()"
-                        class="bg-slate-800 border border-slate-700/80 rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
+                        class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-md px-2 py-1 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
                     <option value="">All Statuses</option>
                     {% for val, label in task_statuses %}
                     <option value="{{ val }}">{{ label }}</option>
@@ -197,7 +197,7 @@
 
                 <!-- Priority Filter -->
                 <select x-model="filterPriority" @change="filterTasks()"
-                        class="bg-slate-800 border border-slate-700/80 rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
+                        class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-md px-2 py-1 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
                     <option value="">All Priorities</option>
                     {% for val, label in task_priorities %}
                     <option value="{{ val }}">{{ label }}</option>
@@ -206,7 +206,7 @@
 
                 <!-- Assignee Filter -->
                 <select x-model="filterAssignee" @change="filterTasks()"
-                        class="bg-slate-800 border border-slate-700/80 rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
+                        class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-md px-2 py-1 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
                     <option value="">All Assignees</option>
                     {% for u in all_users %}
                     <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
@@ -215,7 +215,7 @@
             </div>
 
             <!-- Legend & Critical Indicator -->
-            <div class="hidden xl:flex items-center space-x-3 text-[11px] text-slate-400">
+            <div class="hidden xl:flex items-center space-x-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500 animate-pulse"></span> Critical Path</span>
                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Complete</span>
                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> In Progress</span>
@@ -227,104 +227,104 @@
         <div class="flex-1 flex overflow-hidden relative" id="dual-pane-container">
             
             <!-- Left Pane: Excel-like Task Sheet / Grid -->
-            <div id="left-pane" class="flex flex-col border-r border-slate-800 bg-slate-900/90 overflow-hidden shrink-0" style="width: 50%;">
+            <div id="left-pane" class="flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 overflow-hidden shrink-0" style="width: 50%;">
                 
                 <!-- Grid Table Header -->
-                <div class="excel-grid-header flex items-center bg-slate-850 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 select-none">
-                    <div class="w-12 px-2 py-2.5 text-center border-r border-slate-800">WBS</div>
-                    <div class="flex-1 px-3 py-2.5 border-r border-slate-800 min-w-[180px]">Task Name</div>
-                    <div class="w-24 px-2 py-2.5 text-center border-r border-slate-800">Assignee</div>
-                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-800">Start</div>
-                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-800">End</div>
-                    <div class="w-14 px-1 py-2.5 text-center border-r border-slate-800">Days</div>
-                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-800">Progress</div>
-                    <div class="w-24 px-2 py-2.5 text-center border-r border-slate-800">Status</div>
+                <div class="excel-grid-header flex items-center bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider shrink-0 select-none">
+                    <div class="w-12 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">WBS</div>
+                    <div class="flex-1 px-3 py-2.5 border-r border-slate-200 dark:border-slate-800 min-w-[180px]">Task Name</div>
+                    <div class="w-24 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">Assignee</div>
+                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">Start</div>
+                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">End</div>
+                    <div class="w-14 px-1 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">Days</div>
+                    <div class="w-20 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">Progress</div>
+                    <div class="w-24 px-2 py-2.5 text-center border-r border-slate-200 dark:border-slate-800">Status</div>
                     <div class="w-28 px-1 py-2.5 text-center">Actions</div>
                 </div>
 
                 <!-- Grid Rows Body -->
-                <div id="grid-scroll-body" class="flex-1 overflow-y-auto overflow-x-auto divide-y divide-slate-800/60 font-sans text-xs select-none"
+                <div id="grid-scroll-body" class="flex-1 overflow-y-auto overflow-x-auto divide-y divide-slate-100 dark:divide-slate-800/60 font-sans text-xs select-none"
                      @scroll="syncScroll($event, 'grid')">
                     
                     <template x-for="(task, index) in filteredTasks" :key="task.id">
-                        <div class="excel-grid-row flex items-center hover:bg-slate-800/60 transition-colors group cursor-pointer"
+                        <div class="excel-grid-row flex items-center hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group cursor-pointer"
                              :class="{
-                                 'bg-slate-800/40': selectedTaskId == task.id,
-                                 'font-semibold text-white bg-slate-850/40': task.is_parent,
-                                 'border-l-4 border-l-rose-500 bg-rose-950/10': showCriticalPath && task.is_critical
+                                 'bg-brand-50/50 dark:bg-slate-800/40': selectedTaskId == task.id,
+                                 'font-semibold text-slate-900 dark:text-white bg-slate-50/60 dark:bg-slate-850/40': task.is_parent,
+                                 'border-l-4 border-l-rose-500 bg-rose-50/40 dark:bg-rose-950/10': showCriticalPath && task.is_critical
                              }"
                              :style="`height: 44px;`"
                              @click="selectTask(task.id)">
                             
                             <!-- WBS Column -->
-                            <div class="w-12 px-1 text-center font-mono text-[10px] text-slate-400 border-r border-slate-800/60 truncate"
+                            <div class="w-12 px-1 text-center font-mono text-[10px] text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800/60 truncate"
                                  x-text="task.wbs_code"></div>
 
                             <!-- Task Name & Hierarchy Indentation -->
-                            <div class="flex-1 px-3 border-r border-slate-800/60 flex items-center min-w-[180px] overflow-hidden"
+                            <div class="flex-1 px-3 border-r border-slate-100 dark:border-slate-800/60 flex items-center min-w-[180px] overflow-hidden"
                                  :style="`padding-left: ${Math.max(12, (task.depth || 0) * 16 + 12)}px;`">
-                                
+                                 
                                 <template x-if="task.is_milestone">
-                                    <i data-lucide="diamond" class="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 mr-1.5 shrink-0"></i>
+                                    <i data-lucide="diamond" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-400/30 mr-1.5 shrink-0"></i>
                                 </template>
                                 <template x-if="!task.is_milestone && task.is_parent">
-                                    <i data-lucide="folder" class="w-3.5 h-3.5 text-indigo-400 mr-1.5 shrink-0"></i>
+                                    <i data-lucide="folder" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 mr-1.5 shrink-0"></i>
                                 </template>
                                 <template x-if="!task.is_milestone && !task.is_parent">
-                                    <i data-lucide="circle-dot" class="w-3 h-3 text-slate-500 mr-1.5 shrink-0"></i>
+                                    <i data-lucide="circle-dot" class="w-3 h-3 text-slate-400 dark:text-slate-500 mr-1.5 shrink-0"></i>
                                 </template>
 
-                                <span class="truncate text-xs" :class="task.is_parent ? 'text-white' : 'text-slate-200'" x-text="task.name"></span>
+                                <span class="truncate text-xs" :class="task.is_parent ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-800 dark:text-slate-200'" x-text="task.name"></span>
 
                                 <template x-if="task.is_critical && showCriticalPath">
-                                    <span class="ml-1.5 px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 font-mono text-[9px] font-bold border border-rose-500/30">CPM</span>
+                                    <span class="ml-1.5 px-1 py-0.2 rounded bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 font-mono text-[9px] font-bold border border-rose-200 dark:border-rose-500/30">CPM</span>
                                 </template>
                             </div>
 
                             <!-- Assignee Avatar -->
-                            <div class="w-24 px-2 text-center border-r border-slate-800/60 flex items-center justify-center">
+                            <div class="w-24 px-2 text-center border-r border-slate-100 dark:border-slate-800/60 flex items-center justify-center">
                                 <template x-if="task.assignee_detail">
                                     <div class="flex items-center gap-1.5 truncate">
-                                        <div class="w-5 h-5 rounded-full bg-brand-600/60 border border-brand-400/40 flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                                        <div class="w-5 h-5 rounded-full bg-brand-600 dark:bg-brand-600/60 border border-brand-400/40 flex items-center justify-center text-[9px] font-bold text-white shrink-0"
                                              x-text="task.assignee_detail.initials"></div>
-                                        <span class="text-[11px] text-slate-300 truncate" x-text="task.assignee_detail.first_name || task.assignee_detail.username"></span>
+                                        <span class="text-[11px] text-slate-700 dark:text-slate-300 truncate" x-text="task.assignee_detail.first_name || task.assignee_detail.username"></span>
                                     </div>
                                 </template>
                                 <template x-if="!task.assignee_detail">
-                                    <span class="text-[10px] text-slate-600 italic">Unassigned</span>
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-600 italic">Unassigned</span>
                                 </template>
                             </div>
 
                             <!-- Start Date -->
-                            <div class="w-20 px-1 text-center font-mono text-[10px] text-slate-400 border-r border-slate-800/60 truncate"
+                            <div class="w-20 px-1 text-center font-mono text-[10px] text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800/60 truncate"
                                  x-text="formatDateShort(task.start_date)"></div>
 
                             <!-- End Date -->
-                            <div class="w-20 px-1 text-center font-mono text-[10px] text-slate-400 border-r border-slate-800/60 truncate"
+                            <div class="w-20 px-1 text-center font-mono text-[10px] text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800/60 truncate"
                                  x-text="formatDateShort(task.end_date)"></div>
 
                             <!-- Duration Days -->
-                            <div class="w-14 px-1 text-center font-mono text-[10px] text-slate-300 border-r border-slate-800/60 truncate"
+                            <div class="w-14 px-1 text-center font-mono text-[10px] text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800/60 truncate"
                                  x-text="`${task.duration_days}d`"></div>
 
                             <!-- Progress Bar -->
-                            <div class="w-20 px-2 text-center border-r border-slate-800/60 flex items-center">
-                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div class="w-20 px-2 text-center border-r border-slate-100 dark:border-slate-800/60 flex items-center">
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                                     <div class="h-full rounded-full transition-all duration-300"
                                          :class="task.progress == 100 ? 'bg-emerald-500' : 'bg-brand-500'"
                                          :style="`width: ${task.progress}%;`"></div>
                                 </div>
-                                <span class="text-[9px] text-slate-400 font-mono ml-1 w-6 text-right" x-text="`${task.progress}%`"></span>
+                                <span class="text-[9px] text-slate-500 dark:text-slate-400 font-mono ml-1 w-6 text-right" x-text="`${task.progress}%`"></span>
                             </div>
 
                             <!-- Status Badge -->
-                            <div class="w-24 px-2 text-center border-r border-slate-800/60">
+                            <div class="w-24 px-2 text-center border-r border-slate-100 dark:border-slate-800/60">
                                 <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold truncate max-w-full"
                                       :class="{
-                                          'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': task.status === 'COMPLETE',
-                                          'bg-blue-500/10 text-blue-400 border border-blue-500/20': task.status === 'IN_PROGRESS',
-                                          'bg-rose-500/10 text-rose-400 border border-rose-500/20': task.status === 'DELAYED',
-                                          'bg-slate-800 text-slate-400 border border-slate-700': task.status === 'NOT_STARTED'
+                                          'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20': task.status === 'COMPLETE',
+                                          'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20': task.status === 'IN_PROGRESS',
+                                          'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20': task.status === 'DELAYED',
+                                          'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700': task.status === 'NOT_STARTED'
                                       }"
                                       x-text="task.status.replace('_', ' ')"></span>
                             </div>
@@ -332,27 +332,27 @@
                             <!-- Actions -->
                             <div class="w-28 px-1 flex items-center justify-center space-x-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
                                 <button @click.stop="openSubtaskModal(task)" title="Add Subtask (under this parent)"
-                                        class="p-1 text-slate-400 hover:text-emerald-400 rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="corner-down-right" class="w-3.5 h-3.5"></i>
                                 </button>
                                 <button @click.stop="insertTaskBelow(task)" title="Insert New Task Below (at this level)"
-                                        class="p-1 text-slate-400 hover:text-brand-400 rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 </button>
                                 <button @click.stop="moveTaskUp(task)" title="Move Up"
-                                        class="p-1 text-slate-500 hover:text-amber-400 rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="chevron-up" class="w-3 h-3"></i>
                                 </button>
                                 <button @click.stop="moveTaskDown(task)" title="Move Down"
-                                        class="p-1 text-slate-500 hover:text-amber-400 rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="chevron-down" class="w-3 h-3"></i>
                                 </button>
                                 <button @click.stop="openEditModal(task)" title="Edit Details & Dependencies"
-                                        class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                 </button>
                                 <button @click.stop="deleteTask(task.id)" title="Delete Task"
-                                        class="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-800 transition-colors">
+                                        class="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
@@ -363,11 +363,11 @@
 
             <!-- Draggable Resizer Bar -->
             <div id="pane-resizer"
-                 class="w-1 bg-slate-800 hover:bg-brand-500 cursor-col-resize select-none shrink-0 transition-colors z-10"
+                 class="w-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-brand-500 cursor-col-resize select-none shrink-0 transition-colors z-10"
                  @mousedown="startResize($event)"></div>
 
             <!-- Right Pane: Interactive Frappe Gantt Chart -->
-            <div id="right-pane" class="flex-1 flex flex-col bg-slate-950 overflow-hidden relative">
+            <div id="right-pane" class="flex-1 flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative">
                 <div id="gantt-chart-container" class="flex-1 overflow-x-auto overflow-y-auto p-2"
                      @scroll="syncScroll($event, 'gantt')">
                     <svg id="gantt-svg" class="min-w-full"></svg>
@@ -377,18 +377,18 @@
     </div>
 
     <!-- VIEW 2: KANBAN BOARD VIEW -->
-    <div x-show="activeWorkspaceView === 'kanban'" class="flex-1 overflow-x-auto overflow-y-auto p-6 bg-slate-950" x-cloak>
+    <div x-show="activeWorkspaceView === 'kanban'" class="flex-1 overflow-x-auto overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950" x-cloak>
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-5">
             <!-- Columns: NOT_STARTED, IN_PROGRESS, DELAYED, COMPLETE -->
             <template x-for="col in kanbanColumns" :key="col.status">
-                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col kanban-col shadow-lg">
+                <div class="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col kanban-col shadow-sm">
                     <!-- Column Header -->
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full" :class="col.badgeColor"></span>
-                            <h3 class="text-xs font-bold text-white uppercase tracking-wider" x-text="col.label"></h3>
+                            <h3 class="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider" x-text="col.label"></h3>
                         </div>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400"
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
                               x-text="getTasksByStatus(col.status).length"></span>
                     </div>
 
@@ -397,32 +397,32 @@
                          @dragover.prevent
                          @drop="handleKanbanDrop($event, col.status)">
                         <template x-for="task in getTasksByStatus(col.status)" :key="task.id">
-                            <div class="bg-slate-850 hover:bg-slate-800 border border-slate-750 rounded-xl p-3.5 kanban-card cursor-grab space-y-2.5"
+                            <div class="bg-white dark:bg-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-xl p-3.5 kanban-card cursor-grab space-y-2.5 shadow-sm"
                                  draggable="true"
                                  @dragstart="handleKanbanDragStart($event, task)"
                                  @click="openEditModal(task)">
                                 
                                 <div class="flex items-start justify-between gap-2">
-                                    <span class="text-[9px] font-mono font-bold text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20"
+                                    <span class="text-[9px] font-mono font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-200 dark:border-brand-500/20"
                                           x-text="task.wbs_code"></span>
                                     <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded"
                                           :class="{
-                                              'text-rose-400 bg-rose-500/10': task.priority === 'CRITICAL',
-                                              'text-amber-400 bg-amber-500/10': task.priority === 'HIGH',
-                                              'text-blue-400 bg-blue-500/10': task.priority === 'MEDIUM',
-                                              'text-slate-400 bg-slate-800': task.priority === 'LOW'
+                                              'text-rose-700 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10': task.priority === 'CRITICAL',
+                                              'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10': task.priority === 'HIGH',
+                                              'text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10': task.priority === 'MEDIUM',
+                                              'text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800': task.priority === 'LOW'
                                           }"
                                           x-text="task.priority"></span>
                                 </div>
 
-                                <h4 class="text-xs font-semibold text-white leading-snug" x-text="task.name"></h4>
+                                <h4 class="text-xs font-semibold text-slate-900 dark:text-white leading-snug" x-text="task.name"></h4>
 
-                                <div class="flex items-center justify-between text-[10px] text-slate-400 pt-2 border-t border-slate-800">
+                                <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                                     <div class="flex items-center gap-1">
-                                        <i data-lucide="calendar" class="w-3 h-3 text-slate-500"></i>
+                                        <i data-lucide="calendar" class="w-3 h-3 text-slate-400 dark:text-slate-500"></i>
                                         <span x-text="formatDateShort(task.end_date)"></span>
                                     </div>
-                                    <span class="font-bold text-slate-300" x-text="`${task.progress}%`"></span>
+                                    <span class="font-bold text-slate-700 dark:text-slate-300" x-text="`${task.progress}%`"></span>
                                 </div>
                             </div>
                         </template>
@@ -433,21 +433,21 @@
     </div>
 
     <!-- VIEW 3: RESOURCE WORKLOAD HEATMAP -->
-    <div x-show="activeWorkspaceView === 'workload'" class="flex-1 overflow-y-auto p-6 bg-slate-950" x-cloak>
+    <div x-show="activeWorkspaceView === 'workload'" class="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950" x-cloak>
         <div class="max-w-7xl mx-auto space-y-6">
             <div>
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i data-lucide="users" class="w-5 h-5 text-brand-400"></i>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="users" class="w-5 h-5 text-brand-600 dark:text-brand-400"></i>
                     Team Capacity & Resource Allocation
                 </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Identify workload balance, total estimated hours, and over-allocated team members.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Identify workload balance, total estimated hours, and over-allocated team members.</p>
             </div>
 
             <!-- Empty State if no members -->
-            <div x-show="!workloadData || workloadData.length === 0" class="p-8 text-center bg-slate-900 border border-slate-800 rounded-xl space-y-3">
-                <i data-lucide="users" class="w-8 h-8 text-slate-600 mx-auto"></i>
-                <h3 class="text-sm font-bold text-white">No Team Contributors Found</h3>
-                <p class="text-xs text-slate-400 max-w-sm mx-auto">Add team members in Team Management or assign tasks to see live workload capacity and allocation.</p>
+            <div x-show="!workloadData || workloadData.length === 0" class="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3 shadow-sm">
+                <i data-lucide="users" class="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto"></i>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">No Team Contributors Found</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Add team members in Team Management or assign tasks to see live workload capacity and allocation.</p>
                 <a href="/team/" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold">
                     <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
                     <span>Go to Team Management</span>
@@ -456,46 +456,46 @@
 
             <div x-show="workloadData && workloadData.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <template x-for="member in workloadData" :key="member.user_id">
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs"
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs shadow-inner"
                                      x-text="member.initials"></div>
                                 <div>
-                                    <h3 class="text-xs font-bold text-white" x-text="member.name"></h3>
-                                    <p class="text-[10px] text-slate-400" x-text="`@${member.username}`"></p>
+                                    <h3 class="text-xs font-bold text-slate-900 dark:text-white" x-text="member.name"></h3>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400" x-text="`@${member.username}`"></p>
                                 </div>
                             </div>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  :class="member.is_overallocated ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'"
+                                  :class="member.is_overallocated ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/40' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/40'"
                                   x-text="member.is_overallocated ? 'Overallocated' : 'Balanced'"></span>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-2 p-3 bg-slate-850 rounded-lg text-center text-xs">
+                        <div class="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-850 rounded-lg text-center text-xs">
                             <div>
-                                <p class="text-[10px] text-slate-400">Tasks</p>
-                                <p class="font-bold text-white text-sm mt-0.5" x-text="member.total_tasks"></p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Tasks</p>
+                                <p class="font-bold text-slate-900 dark:text-white text-sm mt-0.5" x-text="member.total_tasks"></p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-slate-400">Est. Hours</p>
-                                <p class="font-bold text-brand-400 text-sm mt-0.5" x-text="`${member.estimated_hours}h`"></p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Est. Hours</p>
+                                <p class="font-bold text-brand-600 dark:text-brand-400 text-sm mt-0.5" x-text="`${member.estimated_hours}h`"></p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-slate-400">Actual Hours</p>
-                                <p class="font-bold text-emerald-400 text-sm mt-0.5" x-text="`${member.actual_hours}h`"></p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Actual Hours</p>
+                                <p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5" x-text="`${member.actual_hours}h`"></p>
                             </div>
                         </div>
 
                         <!-- Assigned Tasks List -->
                         <div class="space-y-1.5 max-h-40 overflow-y-auto">
                             <template x-for="t in member.tasks" :key="t.id">
-                                <div class="flex items-center justify-between p-2 rounded bg-slate-800/60 text-xs">
-                                    <span class="truncate max-w-[180px] text-slate-200" x-text="`[${t.wbs_code}] ${t.name}`"></span>
-                                    <span class="text-[10px] font-mono text-slate-400" x-text="`${t.progress}%`"></span>
+                                <div class="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-800/60 text-xs">
+                                    <span class="truncate max-w-[180px] text-slate-700 dark:text-slate-200" x-text="`[${t.wbs_code}] ${t.name}`"></span>
+                                    <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400" x-text="`${t.progress}%`"></span>
                                 </div>
                             </template>
                             <template x-if="!member.tasks || member.tasks.length === 0">
-                                <div class="p-3 bg-slate-850/50 rounded-lg text-center text-slate-500 text-[11px] italic">
+                                <div class="p-3 bg-slate-50 dark:bg-slate-850/50 rounded-lg text-center text-slate-400 dark:text-slate-500 text-[11px] italic">
                                     No active tasks assigned (Available Capacity)
                                 </div>
                             </template>
@@ -507,46 +507,46 @@
     </div>
 
     <!-- VIEW 4: FINANCIALS & EARNED VALUE (EVM) -->
-    <div x-show="activeWorkspaceView === 'evm'" class="flex-1 overflow-y-auto p-6 bg-slate-950" x-cloak>
+    <div x-show="activeWorkspaceView === 'evm'" class="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950" x-cloak>
         <div class="max-w-7xl mx-auto space-y-6">
             <div>
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-xs">₹</span>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 flex items-center justify-center font-bold text-emerald-600 dark:text-emerald-400 text-xs">₹</span>
                     Financial Tracking & Earned Value Management (EVM - INR ₹)
                 </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Real-time Cost Performance Index (CPI) and Schedule Performance Index (SPI) metrics as per Indian Standard.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time Cost Performance Index (CPI) and Schedule Performance Index (SPI) metrics as per Indian Standard.</p>
             </div>
 
             <!-- EVM KPI Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <p class="text-[10px] uppercase font-semibold text-slate-400">Planned Value (PV)</p>
-                    <h3 class="text-xl font-bold text-white mt-1" x-text="formatCurrencyINR(evmData.planned_value || 0)"></h3>
-                    <p class="text-[10px] text-slate-500 mt-1">Authorized budget for scheduled work (INR)</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                    <p class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Planned Value (PV)</p>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-1" x-text="formatCurrencyINR(evmData.planned_value || 0)"></h3>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Authorized budget for scheduled work (INR)</p>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <p class="text-[10px] uppercase font-semibold text-slate-400">Earned Value (EV)</p>
-                    <h3 class="text-xl font-bold text-indigo-400 mt-1" x-text="formatCurrencyINR(evmData.earned_value || 0)"></h3>
-                    <p class="text-[10px] text-slate-500 mt-1">Budgeted value of completed work (INR)</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                    <p class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Earned Value (EV)</p>
+                    <h3 class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-1" x-text="formatCurrencyINR(evmData.earned_value || 0)"></h3>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Budgeted value of completed work (INR)</p>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <p class="text-[10px] uppercase font-semibold text-slate-400">Actual Cost (AC)</p>
-                    <h3 class="text-xl font-bold text-emerald-400 mt-1" x-text="formatCurrencyINR(evmData.actual_cost || 0)"></h3>
-                    <p class="text-[10px] text-slate-500 mt-1">Total realized project expense (INR)</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                    <p class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Actual Cost (AC)</p>
+                    <h3 class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1" x-text="formatCurrencyINR(evmData.actual_cost || 0)"></h3>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Total realized project expense (INR)</p>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <p class="text-[10px] uppercase font-semibold text-slate-400">Cost Perf. Index (CPI)</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                    <p class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Cost Perf. Index (CPI)</p>
                     <h3 class="text-xl font-bold mt-1"
-                        :class="(evmData.cpi || 1) >= 1 ? 'text-emerald-400' : 'text-rose-400'"
+                        :class="(evmData.cpi || 1) >= 1 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
                         x-text="evmData.cpi || 1.0"></h3>
-                    <p class="text-[10px] text-slate-500 mt-1" x-text="evmData.cost_status || 'Under Budget'"></p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1" x-text="evmData.cost_status || 'Under Budget'"></p>
                 </div>
             </div>
 
             <!-- Financial Table -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
-                <table class="min-w-full divide-y divide-slate-800 text-left text-xs">
-                    <thead class="bg-slate-850 text-slate-400 uppercase text-[10px] font-semibold">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+                    <thead class="bg-slate-50 dark:bg-slate-850 text-slate-600 dark:text-slate-400 uppercase text-[10px] font-semibold">
                         <tr>
                             <th class="py-3 px-4">WBS</th>
                             <th class="py-3 px-4">Task Name</th>
@@ -558,16 +558,16 @@
                             <th class="py-3 px-4">Progress</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800 text-slate-300">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                         <template x-for="t in tasks" :key="t.id">
-                            <tr class="hover:bg-slate-800/40">
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                                 <td class="py-2.5 px-4 font-mono text-[10px]" x-text="t.wbs_code"></td>
-                                <td class="py-2.5 px-4 font-medium text-white" x-text="t.name"></td>
-                                <td class="py-2.5 px-4 text-slate-400" x-text="t.assignee_detail ? (t.assignee_detail.full_name || t.assignee_detail.username) : '-'"></td>
-                                <td class="py-2.5 px-4 font-mono text-slate-300" x-text="formatCurrencyINR(t.estimated_cost)"></td>
-                                <td class="py-2.5 px-4 font-mono text-emerald-400" x-text="formatCurrencyINR(t.actual_cost)"></td>
+                                <td class="py-2.5 px-4 font-medium text-slate-900 dark:text-white" x-text="t.name"></td>
+                                <td class="py-2.5 px-4 text-slate-500 dark:text-slate-400" x-text="t.assignee_detail ? (t.assignee_detail.full_name || t.assignee_detail.username) : '-'"></td>
+                                <td class="py-2.5 px-4 font-mono text-slate-700 dark:text-slate-300" x-text="formatCurrencyINR(t.estimated_cost)"></td>
+                                <td class="py-2.5 px-4 font-mono text-emerald-600 dark:text-emerald-400 font-semibold" x-text="formatCurrencyINR(t.actual_cost)"></td>
                                 <td class="py-2.5 px-4 font-mono" x-text="`${t.estimated_hours} hrs`"></td>
-                                <td class="py-2.5 px-4 font-mono text-blue-400" x-text="`${t.actual_hours} hrs`"></td>
+                                <td class="py-2.5 px-4 font-mono text-blue-600 dark:text-blue-400" x-text="`${t.actual_hours} hrs`"></td>
                                 <td class="py-2.5 px-4 font-mono" x-text="`${t.progress}%`"></td>
                             </tr>
                         </template>
@@ -578,35 +578,35 @@
     </div>
 
     <!-- VIEW 5: PROJECT AUDIT LOG -->
-    <div x-show="activeWorkspaceView === 'audit'" class="flex-1 overflow-y-auto p-6 bg-slate-950" x-cloak>
+    <div x-show="activeWorkspaceView === 'audit'" class="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950" x-cloak>
         <div class="max-w-4xl mx-auto space-y-4">
             <div>
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="history" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
                     Project Activity Stream & Audit Log
                 </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Chronological record of all scheduling updates, comments, and task modifications.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Chronological record of all scheduling updates, comments, and task modifications.</p>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl divide-y divide-slate-100 dark:divide-slate-800 shadow-sm">
                 <template x-for="log in activityLogs" :key="log.id">
                     <div class="p-4 flex items-start space-x-3 text-xs">
-                        <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+                        <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
                             <i data-lucide="activity" class="w-3.5 h-3.5"></i>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <span class="font-bold text-white" x-text="log.user_name || log.username || 'System'"></span>
+                                    <span class="font-bold text-slate-900 dark:text-white" x-text="log.user_name || log.username || 'System'"></span>
                                     <span x-show="log.username && log.user_name && log.user_name !== log.username" class="text-[10px] text-slate-400 font-normal ml-1" x-text="`(@${log.username})`"></span>
                                 </div>
-                                <span class="text-[10px] text-slate-500 font-mono" x-text="formatDateFull(log.created_at)"></span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono" x-text="formatDateFull(log.created_at)"></span>
                             </div>
-                            <p class="text-slate-300 mt-0.5"><strong class="text-brand-300" x-text="log.action"></strong>: <span x-text="log.details"></span></p>
+                            <p class="text-slate-700 dark:text-slate-300 mt-0.5"><strong class="text-brand-600 dark:text-brand-300" x-text="log.action"></strong>: <span x-text="log.details"></span></p>
                         </div>
                     </div>
                 </template>
-                <div x-show="activityLogs.length === 0" class="p-8 text-center text-slate-500 text-xs">
+                <div x-show="activityLogs.length === 0" class="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                     No activity logs recorded yet.
                 </div>
             </div>
@@ -615,39 +615,39 @@
 
     <!-- Task Detail / Edit & Multi-Tab Drawer Modal -->
     <div x-show="showEditModal" x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
         <div @click.away="showEditModal = false"
-             class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 text-xs">
+             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 text-xs">
             
             <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+                    <div class="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10 border border-brand-200 dark:border-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400">
                         <i data-lucide="edit-2" class="w-4 h-4"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-white" x-text="isCreating ? 'Create Task / Milestone' : 'Task Details & Controls'"></h3>
-                        <p class="text-[10px] text-slate-400 font-mono" x-text="editForm.wbs_code ? `WBS: ${editForm.wbs_code}` : ''"></p>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white" x-text="isCreating ? 'Create Task / Milestone' : 'Task Details & Controls'"></h3>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono" x-text="editForm.wbs_code ? `WBS: ${editForm.wbs_code}` : ''"></p>
                     </div>
                 </div>
-                <button @click="showEditModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <!-- Modal Tabs (General, Dependencies, Financials, Comments, Attachments) -->
-            <div class="flex items-center space-x-1 border-b border-slate-800 pb-2 text-[11px] font-semibold">
+            <div class="flex items-center space-x-1 border-b border-slate-200 dark:border-slate-800 pb-2 text-[11px] font-semibold">
                 <button @click="modalTab = 'general'"
-                        :class="modalTab === 'general' ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'text-slate-400 hover:text-white border-transparent'"
+                        :class="modalTab === 'general' ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-600/20 dark:text-brand-300 dark:border-brand-500/40' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent'"
                         class="px-3 py-1 rounded-md border transition-all">General</button>
                 <button @click="modalTab = 'deps'"
-                        :class="modalTab === 'deps' ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'text-slate-400 hover:text-white border-transparent'"
+                        :class="modalTab === 'deps' ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-600/20 dark:text-brand-300 dark:border-brand-500/40' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent'"
                         class="px-3 py-1 rounded-md border transition-all">Dependencies</button>
                 <button @click="modalTab = 'financials'"
-                        :class="modalTab === 'financials' ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'text-slate-400 hover:text-white border-transparent'"
+                        :class="modalTab === 'financials' ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-600/20 dark:text-brand-300 dark:border-brand-500/40' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent'"
                         class="px-3 py-1 rounded-md border transition-all">Cost & Effort</button>
                 <button @click="modalTab = 'comments'; loadComments()"
-                        :class="modalTab === 'comments' ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'text-slate-400 hover:text-white border-transparent'"
+                        :class="modalTab === 'comments' ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-600/20 dark:text-brand-300 dark:border-brand-500/40' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent'"
                         class="px-3 py-1 rounded-md border transition-all">Comments</button>
             </div>
 
@@ -657,21 +657,21 @@
                 <!-- TAB 1: GENERAL -->
                 <div x-show="modalTab === 'general'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Task Name *</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Task Name *</label>
                         <input type="text" x-model="editForm.name" required
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Description</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
                         <textarea x-model="editForm.description" rows="2"
-                                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Parent Task (WBS)</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Task (WBS)</label>
                         <select x-model="editForm.parent_task"
-                                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                             <option :value="null">-- None (Root Task) --</option>
                             <template x-for="t in tasks" :key="t.id">
                                 <option :value="t.id" x-text="`[${t.wbs_code}] ${t.name}`" :disabled="t.id === editForm.id"></option>
@@ -680,9 +680,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Assignee</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Assignee</label>
                         <select x-model="editForm.assignee"
-                                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                             <option :value="null">-- Unassigned --</option>
                             {% for u in all_users %}
                             <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
@@ -691,21 +691,21 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Start Date</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
                         <input type="date" x-model="editForm.start_date" @change="onDateChange()"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">End Date</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">End Date</label>
                         <input type="date" x-model="editForm.end_date" @change="onDateChange()"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Status</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
                         <select x-model="editForm.status"
-                                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                             {% for val, label in task_statuses %}
                             <option value="{{ val }}">{{ label }}</option>
                             {% endfor %}
@@ -713,9 +713,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Priority</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
                         <select x-model="editForm.priority"
-                                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                             {% for val, label in task_priorities %}
                             <option value="{{ val }}">{{ label }}</option>
                             {% endfor %}
@@ -723,8 +723,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">
-                            Progress: <span class="text-white font-bold" x-text="`${editForm.progress}%`"></span>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Progress: <span class="text-slate-900 dark:text-white font-bold" x-text="`${editForm.progress}%`"></span>
                         </label>
                         <input type="range" min="0" max="100" step="5" x-model="editForm.progress"
                                class="w-full accent-brand-500 cursor-pointer">
@@ -732,8 +732,8 @@
 
                     <div class="flex items-center space-x-2 pt-5">
                         <input type="checkbox" id="milestone-toggle" x-model="editForm.is_milestone"
-                               class="w-4 h-4 text-brand-600 bg-slate-800 border-slate-700 rounded focus:ring-brand-500">
-                        <label for="milestone-toggle" class="text-xs text-slate-300 font-medium cursor-pointer">
+                               class="w-4 h-4 text-brand-600 bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 rounded focus:ring-brand-500">
+                        <label for="milestone-toggle" class="text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer">
                             Key Milestone (Diamond)
                         </label>
                     </div>
@@ -741,30 +741,30 @@
 
                 <!-- TAB 2: DEPENDENCIES & CRITICAL PATH -->
                 <div x-show="modalTab === 'deps'" class="space-y-4">
-                    <div class="flex items-center justify-between p-3 bg-slate-850 rounded-xl border border-slate-800">
+                    <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div>
-                            <p class="text-[11px] font-semibold text-white">Critical Path Method (CPM)</p>
-                            <p class="text-[10px] text-slate-400" x-text="editForm.is_critical ? 'This task is on the CRITICAL PATH (Total Float = 0d)' : `Total Float / Slack: ${editForm.total_float_days || 0} days`"></p>
+                            <p class="text-[11px] font-semibold text-slate-900 dark:text-white">Critical Path Method (CPM)</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400" x-text="editForm.is_critical ? 'This task is on the CRITICAL PATH (Total Float = 0d)' : `Total Float / Slack: ${editForm.total_float_days || 0} days`"></p>
                         </div>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded"
-                              :class="editForm.is_critical ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-400'">
+                              :class="editForm.is_critical ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/40' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'">
                             <span x-text="editForm.is_critical ? 'CRITICAL' : 'NON-CRITICAL'"></span>
                         </span>
                     </div>
 
                     <!-- Predecessors List -->
                     <div>
-                        <h4 class="text-[11px] font-bold text-slate-300 mb-2">Predecessor Dependencies</h4>
+                        <h4 class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">Predecessor Dependencies</h4>
                         <div class="space-y-2 mb-3">
                             <template x-for="dep in editForm.predecessors_list" :key="dep.id">
-                                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/80 border border-slate-700/80">
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
                                     <div class="flex items-center space-x-2">
-                                        <span class="px-2 py-0.5 rounded bg-brand-500/20 text-brand-300 font-mono text-[10px] font-semibold" x-text="getDependencyTypeLabel(dep.dependency_type)"></span>
-                                        <span class="text-slate-200 font-medium" x-text="dep.predecessor_name"></span>
-                                        <span class="text-[10px] text-slate-400 font-mono" x-show="dep.lag_days" x-text="`(+${dep.lag_days}d lag)`"></span>
+                                        <span class="px-2 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300 font-mono text-[10px] font-semibold" x-text="getDependencyTypeLabel(dep.dependency_type)"></span>
+                                        <span class="text-slate-800 dark:text-slate-200 font-medium" x-text="dep.predecessor_name"></span>
+                                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono" x-show="dep.lag_days" x-text="`(+${dep.lag_days}d lag)`"></span>
                                     </div>
                                     <button type="button" @click="deleteDependency(dep.id)" title="Remove Dependency"
-                                            class="text-slate-400 hover:text-rose-400 p-1">
+                                            class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1">
                                         <i data-lucide="trash" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </div>
@@ -772,12 +772,12 @@
                         </div>
 
                         <!-- Add Predecessor -->
-                        <div class="p-3 bg-slate-850 border border-slate-800 rounded-xl space-y-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Add Predecessor Link</span>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Add Predecessor Link</span>
                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
                                 <div class="sm:col-span-5">
-                                    <label class="block text-[10px] text-slate-400 mb-0.5">Predecessor Task</label>
-                                    <select x-model="newDep.from_task" class="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-slate-200 text-xs">
+                                    <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">Predecessor Task</label>
+                                    <select x-model="newDep.from_task" class="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 text-xs">
                                         <option value="">Select Predecessor Task...</option>
                                         <template x-for="t in tasks" :key="t.id">
                                             <option :value="t.id" x-text="`[${t.wbs_code}] ${t.name}`" :disabled="t.id === editForm.id"></option>
@@ -785,8 +785,8 @@
                                     </select>
                                 </div>
                                 <div class="sm:col-span-5">
-                                    <label class="block text-[10px] text-slate-400 mb-0.5">Relationship Type</label>
-                                    <select x-model="newDep.dependency_type" class="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-slate-200 text-xs">
+                                    <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">Relationship Type</label>
+                                    <select x-model="newDep.dependency_type" class="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 text-xs">
                                         {% for val, label in dependency_types %}
                                         <option value="{{ val }}">{{ label }}</option>
                                         {% endfor %}
@@ -794,7 +794,7 @@
                                 </div>
                                 <div class="sm:col-span-2 pt-3.5">
                                     <button type="button" @click="addDependency()"
-                                            class="w-full py-1.5 px-3 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center gap-1">
+                                            class="w-full py-1.5 px-3 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center gap-1 shadow-sm">
                                         <i data-lucide="link" class="w-3.5 h-3.5"></i>
                                         <span>Link</span>
                                     </button>
@@ -807,24 +807,24 @@
                 <!-- TAB 3: FINANCIALS & EFFORT -->
                 <div x-show="modalTab === 'financials'" class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Estimated Cost (₹ INR)</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Cost (₹ INR)</label>
                         <input type="number" step="1" x-model="editForm.estimated_cost" placeholder="0"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Actual Cost (₹ INR)</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Actual Cost (₹ INR)</label>
                         <input type="number" step="1" x-model="editForm.actual_cost" placeholder="0"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Estimated Effort (Man-Hours)</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Effort (Man-Hours)</label>
                         <input type="number" x-model="editForm.estimated_hours" placeholder="0"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Actual Effort (Man-Hours)</label>
+                        <label class="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">Actual Effort (Man-Hours)</label>
                         <input type="number" x-model="editForm.actual_hours" placeholder="0"
-                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                               class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                     </div>
                 </div>
 
@@ -834,9 +834,9 @@
                     <div class="flex items-center gap-2">
                         <input type="text" x-model="newCommentText" @keyup.enter="postComment()"
                                placeholder="Add a comment or update note..."
-                               class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                               class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <button type="button" @click="postComment()"
-                                class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold">
+                                class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-sm">
                             Post
                         </button>
                     </div>
@@ -844,19 +844,19 @@
                     <!-- Comments List -->
                     <div class="space-y-2 max-h-48 overflow-y-auto">
                         <template x-for="c in taskComments" :key="c.id">
-                            <div class="p-3 bg-slate-850 rounded-lg border border-slate-800 space-y-1">
+                            <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-2">
-                                        <div class="w-5 h-5 rounded-full bg-brand-600 text-white text-[9px] font-bold flex items-center justify-center"
+                                        <div class="w-5 h-5 rounded-full bg-brand-600 text-white text-[9px] font-bold flex items-center justify-center shadow-inner"
                                              x-text="c.author_initials"></div>
-                                        <span class="font-bold text-white text-[11px]" x-text="c.author_name || c.author_username"></span>
+                                        <span class="font-bold text-slate-900 dark:text-white text-[11px]" x-text="c.author_name || c.author_username"></span>
                                     </div>
-                                    <span class="text-[10px] text-slate-500 font-mono" x-text="formatDateShort(c.created_at)"></span>
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono" x-text="formatDateShort(c.created_at)"></span>
                                 </div>
-                                <p class="text-slate-300 text-xs pl-7" x-text="c.text"></p>
+                                <p class="text-slate-700 dark:text-slate-300 text-xs pl-7" x-text="c.text"></p>
                             </div>
                         </template>
-                        <div x-show="taskComments.length === 0" class="text-center py-4 text-slate-500 text-xs italic">
+                        <div x-show="taskComments.length === 0" class="text-center py-4 text-slate-400 dark:text-slate-500 text-xs italic">
                             No comments on this task yet.
                         </div>
                     </div>
@@ -865,21 +865,21 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
                 <template x-if="!isCreating">
                     <button type="button" @click="deleteTask(editForm.id); showEditModal = false"
-                            class="px-3 py-1.5 rounded-lg bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-600/30 text-xs font-semibold flex items-center gap-1.5">
+                            class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-600/10 dark:hover:bg-rose-600/20 dark:text-rose-400 dark:border-rose-600/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                         <span>Delete</span>
                     </button>
                 </template>
                 <div class="flex items-center space-x-3 ml-auto">
                     <button type="button" @click="showEditModal = false"
-                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium">
+                            class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors">
                         Cancel
                     </button>
                     <button type="button" @click="saveTask()"
-                            class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-500/20">
+                            class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-500/20 transition-all">
                         Save Changes
                     </button>
                 </div>
@@ -890,30 +890,30 @@
 
     <!-- Import Excel Modal -->
     <div x-show="showImportModal" x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
         <div @click.away="showImportModal = false"
-             class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="upload" class="w-4 h-4 text-brand-400"></i>
+             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="upload" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i>
                     Import Schedule from Excel (.xlsx)
                 </h3>
-                <button @click="showImportModal = false" class="text-slate-400 hover:text-white">
+                <button @click="showImportModal = false" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
-            <p class="text-slate-400 text-xs leading-relaxed">
+            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                 Upload an Excel file formatted with Task Name, Start Date, End Date, and Progress columns.
             </p>
 
             <form @submit.prevent="handleExcelImport($event)" class="space-y-4">
-                <div class="p-4 border-2 border-dashed border-slate-700 rounded-xl text-center bg-slate-850 hover:border-brand-500 transition-colors">
-                    <input type="file" id="excel-file-input" accept=".xlsx, .xls" required class="text-xs text-slate-300">
+                <div class="p-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-center bg-slate-50 dark:bg-slate-850 hover:border-brand-500 transition-colors">
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls" required class="text-xs text-slate-700 dark:text-slate-300">
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" @click="showImportModal = false" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs">Cancel</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs">Import Tasks</button>
+                    <button type="button" @click="showImportModal = false" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs shadow-sm">Import Tasks</button>
                 </div>
             </form>
         </div>
@@ -925,3 +925,4 @@
 {% block extra_scripts %}
 <script src="/static/js/gantt_app.js"></script>
 {% endblock %}
+ endblock %}

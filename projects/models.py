@@ -122,17 +122,6 @@ class Project(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Always ensure master user 'aman' is enrolled as ADMIN member
-        try:
-            master_id = get_default_master_user_id()
-            ProjectMember.objects.get_or_create(
-                project=self,
-                user_id=master_id,
-                defaults={'role': ProjectRole.ADMIN}
-            )
-        except Exception:
-            pass
-
     @property
     def progress(self):
         """Calculate weighted or average progress of root tasks."""
@@ -198,18 +187,12 @@ class ProjectMember(models.Model):
         return f"{self.user.username} - {self.project.name} ({self.role})"
 
     def clean(self):
-        if self.user and self.user.username == 'aman':
-            self.role = ProjectRole.ADMIN
+        if self.user and self.user.username.lower() == 'aman':
+            raise ValidationError({'user': "Master administrator 'aman' cannot be assigned to project memberships."})
 
     def save(self, *args, **kwargs):
-        if self.user and self.user.username == 'aman':
-            self.role = ProjectRole.ADMIN
+        self.clean()
         super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        if self.user and self.user.username == 'aman':
-            raise ValidationError("Master user 'aman' cannot be removed from project memberships.")
-        super().delete(*args, **kwargs)
 
 
 class Task(models.Model):
@@ -294,6 +277,9 @@ class Task(models.Model):
         s_date = self.start_date.date() if isinstance(self.start_date, (timezone.datetime, datetime)) else self.start_date
         e_date = self.end_date.date() if isinstance(self.end_date, (timezone.datetime, datetime)) else self.end_date
 
+        if self.assignee and self.assignee.username.lower() == 'aman':
+            raise ValidationError({'assignee': "Master administrator 'aman' is reserved for administration only and cannot be assigned to tasks."})
+
         if s_date and e_date and e_date < s_date:
             raise ValidationError({'end_date': "End date cannot be earlier than start date."})
 
@@ -313,8 +299,8 @@ class Task(models.Model):
                 ancestor = ancestor.parent_task
 
     def save(self, *args, **kwargs):
-        if self.assignee and self.assignee.username == 'aman':
-            raise ValidationError("Master user 'aman' is reserved for administration only and cannot be assigned to tasks.")
+        if self.assignee and self.assignee.username.lower() == 'aman':
+            raise ValidationError("Master administrator 'aman' is reserved for administration only and cannot be assigned to tasks.")
 
         s_date = self.start_date.date() if isinstance(self.start_date, (timezone.datetime, datetime)) else self.start_date
         e_date = self.end_date.date() if isinstance(self.end_date, (timezone.datetime, datetime)) else self.end_date

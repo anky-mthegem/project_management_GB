@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("Seeding Milestone Management data as per Indian Standard..."))
 
-        # 1. Create Superuser and Authorized Users
+        # 1. Create Superuser and Authorized Personnel
         aman_user, _ = User.objects.get_or_create(
             username='aman',
             defaults={
@@ -31,45 +31,38 @@ class Command(BaseCommand):
         )
         aman_user.first_name = 'Aman'
         aman_user.last_name = 'Admin'
+        aman_user.email = 'aman@milestonemanagement.local'
         aman_user.set_password('123456')
         aman_user.is_staff = True
         aman_user.is_superuser = True
         aman_user.is_active = True
         aman_user.save()
 
-        amandeep_user, _ = User.objects.get_or_create(
-            username='amanr',
-            defaults={
-                'email': 'amanr@godrej.com',
-                'first_name': 'Amandeep',
-                'last_name': 'Singh',
-                'is_staff': True,
-                'is_active': True,
-            }
-        )
-        amandeep_user.first_name = 'Amandeep'
-        amandeep_user.last_name = 'Singh'
-        amandeep_user.email = 'amanr@godrej.com'
-        amandeep_user.set_password('123456')
-        amandeep_user.save()
+        def get_or_create_app_user(username, first_name, last_name, email, password='Godrej@123'):
+            u, _ = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    'email': email,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'is_staff': False,
+                    'is_active': True,
+                }
+            )
+            u.first_name = first_name
+            u.last_name = last_name
+            u.email = email
+            u.set_password(password)
+            u.is_active = True
+            u.save()
+            return u
 
-        swapnil_user, _ = User.objects.get_or_create(
-            username='smali',
-            defaults={
-                'email': 'smali@godrej.com',
-                'first_name': 'Swapnil',
-                'last_name': 'Mali',
-                'is_staff': True,
-                'is_active': True,
-            }
-        )
-        swapnil_user.first_name = 'Swapnil'
-        swapnil_user.last_name = 'Mali'
-        swapnil_user.email = 'smali@godrej.com'
-        swapnil_user.set_password('123456')
-        swapnil_user.save()
+        sundar_user = get_or_create_app_user('psundar', 'Sundar', 'Nadar', 'psundar@godrej.com')
+        suraj_user = get_or_create_app_user('skhande', 'Suraj', 'Hande', 'skhande@godrej.com')
+        amandeep_user = get_or_create_app_user('amanr', 'Amandeep', 'Singh', 'amanr@godrej.com')
+        swapnil_user = get_or_create_app_user('smali', 'Swapnil', 'Mali', 'smali@godrej.com')
 
-        self.stdout.write(self.style.SUCCESS("Users created (aman / amanr / smali)."))
+        self.stdout.write(self.style.SUCCESS("Users created (aman / psundar / skhande / amanr / smali)."))
 
         # Base reference date
         today = timezone.now().date() if isinstance(timezone.now(), timezone.datetime) else date.today()
@@ -91,10 +84,11 @@ class Command(BaseCommand):
         # Clear existing tasks and deps for clean idempotency
         project.tasks.all().delete()
 
-        # Assign memberships
-        ProjectMember.objects.get_or_create(project=project, user=aman_user, defaults={'role': ProjectRole.ADMIN})
-        ProjectMember.objects.get_or_create(project=project, user=amandeep_user, defaults={'role': ProjectRole.MANAGER})
-        ProjectMember.objects.get_or_create(project=project, user=swapnil_user, defaults={'role': ProjectRole.MANAGER})
+        # Assign memberships (Sundar as Manager, Suraj, Swapnil, Amandeep as Members)
+        ProjectMember.objects.get_or_create(project=project, user=sundar_user, defaults={'role': ProjectRole.MANAGER})
+        ProjectMember.objects.get_or_create(project=project, user=suraj_user, defaults={'role': ProjectRole.MEMBER})
+        ProjectMember.objects.get_or_create(project=project, user=amandeep_user, defaults={'role': ProjectRole.MEMBER})
+        ProjectMember.objects.get_or_create(project=project, user=swapnil_user, defaults={'role': ProjectRole.MEMBER})
 
         # --- PHASE 1: Architecture & Planning ---
         p1 = Task.objects.create(
@@ -105,7 +99,7 @@ class Command(BaseCommand):
             end_date=today - timedelta(days=5),
             status=TaskStatus.COMPLETE,
             priority=TaskPriority.HIGH,
-            assignee=amandeep_user,
+            assignee=sundar_user,
             sort_order=10
         )
 
@@ -141,7 +135,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('210000.00'),
             estimated_hours=50,
             actual_hours=48,
-            assignee=swapnil_user,
+            assignee=suraj_user,
             sort_order=12
         )
 
@@ -160,7 +154,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('50000.00'),
             estimated_hours=10,
             actual_hours=10,
-            assignee=amandeep_user,
+            assignee=sundar_user,
             sort_order=13
         )
 
@@ -177,7 +171,7 @@ class Command(BaseCommand):
             end_date=today + timedelta(days=18),
             status=TaskStatus.IN_PROGRESS,
             priority=TaskPriority.CRITICAL,
-            assignee=amandeep_user,
+            assignee=sundar_user,
             sort_order=20
         )
 
@@ -231,7 +225,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('190000.00'),
             estimated_hours=65,
             actual_hours=45,
-            assignee=amandeep_user,
+            assignee=suraj_user,
             sort_order=23
         )
 
@@ -255,8 +249,8 @@ class Command(BaseCommand):
 
         # Dependencies for Phase 2
         TaskDependency.objects.create(from_task=t1_3, to_task=t2_1, dependency_type=DependencyType.FINISH_TO_START)
-        TaskDependency.objects.create(from_task=t2_1, to_task=t2_2, dependency_type=DependencyType.START_TO_START, lag_days=3)
-        TaskDependency.objects.create(from_task=t2_1, to_task=t2_3, dependency_type=DependencyType.START_TO_START, lag_days=2)
+        TaskDependency.objects.create(from_task=t2_1, to_task=t2_2, dependency_type=DependencyType.START_TO_START, lag_days=2)
+        TaskDependency.objects.create(from_task=t2_1, to_task=t2_3, dependency_type=DependencyType.FINISH_TO_START)
         TaskDependency.objects.create(from_task=t2_1, to_task=t2_4, dependency_type=DependencyType.FINISH_TO_START)
 
         # --- PHASE 3: Testing & Security ---
@@ -268,7 +262,7 @@ class Command(BaseCommand):
             end_date=today + timedelta(days=32),
             status=TaskStatus.NOT_STARTED,
             priority=TaskPriority.HIGH,
-            assignee=swapnil_user,
+            assignee=sundar_user,
             sort_order=30
         )
 
@@ -286,7 +280,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('0.00'),
             estimated_hours=35,
             actual_hours=0,
-            assignee=swapnil_user,
+            assignee=suraj_user,
             sort_order=31
         )
 
@@ -300,30 +294,30 @@ class Command(BaseCommand):
             progress=0,
             status=TaskStatus.NOT_STARTED,
             priority=TaskPriority.MEDIUM,
-            estimated_cost=Decimal('110000.00'),
+            estimated_cost=Decimal('140000.00'),
             actual_cost=Decimal('0.00'),
-            estimated_hours=25,
+            estimated_hours=30,
             actual_hours=0,
-            assignee=amandeep_user,
+            assignee=swapnil_user,
             sort_order=32
         )
 
         t3_3 = Task.objects.create(
             project=project,
             parent_task=p3,
-            name='3.3 Milestone: Security Certification & QA Signoff',
-            description='Compliance audit completion with OWASP Top 10 certification.',
-            start_date=today + timedelta(days=31),
-            end_date=today + timedelta(days=31),
+            name='3.3 Milestone: Security & Vulnerability Sign-off',
+            description='Third-party vulnerability scan and SOC2 compliance audit passed.',
+            start_date=today + timedelta(days=32),
+            end_date=today + timedelta(days=32),
             is_milestone=True,
             progress=0,
             status=TaskStatus.NOT_STARTED,
             priority=TaskPriority.CRITICAL,
-            estimated_cost=Decimal('75000.00'),
+            estimated_cost=Decimal('60000.00'),
             actual_cost=Decimal('0.00'),
-            estimated_hours=15,
+            estimated_hours=12,
             actual_hours=0,
-            assignee=swapnil_user,
+            assignee=sundar_user,
             sort_order=33
         )
 
@@ -332,29 +326,29 @@ class Command(BaseCommand):
         TaskDependency.objects.create(from_task=t3_1, to_task=t3_2, dependency_type=DependencyType.FINISH_TO_START)
         TaskDependency.objects.create(from_task=t3_2, to_task=t3_3, dependency_type=DependencyType.FINISH_TO_START)
 
-        # --- PHASE 4: Deployment & Go-Live ---
+        # --- PHASE 4: Deployment & Cutover ---
         p4 = Task.objects.create(
             project=project,
-            name='4.0 Production Rollout & Enterprise Go-Live',
-            description='Kubernetes cluster provisioning, canary rollout, and user training.',
-            start_date=today + timedelta(days=32),
+            name='4.0 Production Cutover & Hypercare',
+            description='Production deployment, data synchronization, and operational handover.',
+            start_date=today + timedelta(days=33),
             end_date=today + timedelta(days=45),
             status=TaskStatus.NOT_STARTED,
             priority=TaskPriority.CRITICAL,
-            assignee=amandeep_user,
+            assignee=sundar_user,
             sort_order=40
         )
 
         t4_1 = Task.objects.create(
             project=project,
             parent_task=p4,
-            name='4.1 Production Kubernetes Cluster & Ingress Setup',
-            description='Deploy production cluster with autoscaling and multi-zone failover.',
-            start_date=today + timedelta(days=32),
+            name='4.1 Blue/Green Production Deployment',
+            description='Zero downtime DNS switchover and canary health checks.',
+            start_date=today + timedelta(days=33),
             end_date=today + timedelta(days=38),
             progress=0,
             status=TaskStatus.NOT_STARTED,
-            priority=TaskPriority.HIGH,
+            priority=TaskPriority.CRITICAL,
             estimated_cost=Decimal('180000.00'),
             actual_cost=Decimal('0.00'),
             estimated_hours=40,
@@ -366,18 +360,18 @@ class Command(BaseCommand):
         t4_2 = Task.objects.create(
             project=project,
             parent_task=p4,
-            name='4.2 Canary Deployment & 100% Traffic Migration',
-            description='Gradual traffic migration: 10% -> 50% -> 100% with telemetry verification.',
+            name='4.2 Enterprise Training & User Enablement Workshops',
+            description='Conduct onboarding sessions for project managers and delivery leads.',
             start_date=today + timedelta(days=39),
             end_date=today + timedelta(days=44),
             progress=0,
             status=TaskStatus.NOT_STARTED,
-            priority=TaskPriority.CRITICAL,
-            estimated_cost=Decimal('200000.00'),
+            priority=TaskPriority.MEDIUM,
+            estimated_cost=Decimal('90000.00'),
             actual_cost=Decimal('0.00'),
-            estimated_hours=40,
+            estimated_hours=25,
             actual_hours=0,
-            assignee=swapnil_user,
+            assignee=suraj_user,
             sort_order=42
         )
 
@@ -396,7 +390,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('0.00'),
             estimated_hours=10,
             actual_hours=0,
-            assignee=amandeep_user,
+            assignee=sundar_user,
             sort_order=43
         )
 
@@ -428,9 +422,10 @@ class Command(BaseCommand):
             }
         )
         p_ai.tasks.all().delete()
-        ProjectMember.objects.get_or_create(project=p_ai, user=aman_user, defaults={'role': ProjectRole.ADMIN})
-        ProjectMember.objects.get_or_create(project=p_ai, user=amandeep_user, defaults={'role': ProjectRole.MANAGER})
-        ProjectMember.objects.get_or_create(project=p_ai, user=swapnil_user, defaults={'role': ProjectRole.MANAGER})
+        ProjectMember.objects.get_or_create(project=p_ai, user=sundar_user, defaults={'role': ProjectRole.MANAGER})
+        ProjectMember.objects.get_or_create(project=p_ai, user=suraj_user, defaults={'role': ProjectRole.MEMBER})
+        ProjectMember.objects.get_or_create(project=p_ai, user=amandeep_user, defaults={'role': ProjectRole.MEMBER})
+        ProjectMember.objects.get_or_create(project=p_ai, user=swapnil_user, defaults={'role': ProjectRole.MEMBER})
 
         ai_t1 = Task.objects.create(
             project=p_ai,
@@ -445,7 +440,7 @@ class Command(BaseCommand):
             actual_cost=Decimal('100000.00'),
             estimated_hours=60,
             actual_hours=20,
-            assignee=amandeep_user,
+            assignee=suraj_user,
             sort_order=1
         )
         ai_t2 = Task.objects.create(
