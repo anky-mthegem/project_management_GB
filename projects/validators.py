@@ -14,6 +14,7 @@ Features:
 
 import hashlib
 import logging
+import re
 import urllib.request
 import urllib.error
 from django.core.exceptions import ValidationError
@@ -120,11 +121,11 @@ class PwnedPasswordValidator:
 
 class EnterpriseMinimumLengthValidator(MinimumLengthValidator):
     """
-    Enforces a minimum length of 12 characters and supports passphrases up to at least
-    128 characters without truncation (NIST SP 800-63B).
+    Enforces a minimum length of 8 characters and supports passphrases up to at least
+    128 characters without truncation.
     Exempts master admin 'aman'.
     """
-    def __init__(self, min_length=12, max_length=128):
+    def __init__(self, min_length=8, max_length=128):
         super().__init__(min_length=min_length)
         self.max_length = max_length
 
@@ -138,6 +139,63 @@ class EnterpriseMinimumLengthValidator(MinimumLengthValidator):
                 params={'max_length': self.max_length}
             )
         super().validate(password, user=user)
+
+
+class ComplexityPasswordValidator:
+    """
+    Validates that a password contains:
+    - At least one uppercase letter (A-Z)
+    - At least one lowercase letter (a-z)
+    - At least one number (0-9)
+    - At least one special character (!@#$%^&* etc.)
+    Exempts master admin 'aman'.
+    """
+    def __init__(self):
+        pass
+
+    def validate(self, password, user=None):
+        if is_master_admin(user, password):
+            return
+
+        errors = []
+        if not re.search(r'[A-Z]', password):
+            errors.append(
+                ValidationError(
+                    _("Password must contain at least one uppercase letter (A-Z)."),
+                    code='password_no_upper'
+                )
+            )
+        if not re.search(r'[a-z]', password):
+            errors.append(
+                ValidationError(
+                    _("Password must contain at least one lowercase letter (a-z)."),
+                    code='password_no_lower'
+                )
+            )
+        if not re.search(r'\d', password):
+            errors.append(
+                ValidationError(
+                    _("Password must contain at least one number (0-9)."),
+                    code='password_no_number'
+                )
+            )
+        if not re.search(r'[^A-Za-z0-9]', password):
+            errors.append(
+                ValidationError(
+                    _("Password must contain at least one special character (e.g., !@#$%^&*)."),
+                    code='password_no_special'
+                )
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def get_help_text(self):
+        return _(
+            "Your password must contain at least one uppercase letter (A-Z), one lowercase letter (a-z), "
+            "one number (0-9), and one special character (e.g. !@#$%^&*)."
+        )
+
 
 
 class ContextSpecificWordValidator:

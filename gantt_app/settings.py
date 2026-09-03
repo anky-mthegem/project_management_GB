@@ -108,7 +108,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'projects.validators.EnterpriseMinimumLengthValidator',
-        'OPTIONS': {'min_length': 12, 'max_length': 128},
+        'OPTIONS': {'min_length': 8, 'max_length': 128},
+    },
+    {
+        'NAME': 'projects.validators.ComplexityPasswordValidator',
     },
     {
         'NAME': 'projects.validators.EnterpriseCommonPasswordValidator',

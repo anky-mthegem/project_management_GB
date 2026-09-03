@@ -357,7 +357,7 @@
                         <label class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                             New Password <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-[10px] text-slate-400 font-mono">Min 4 chars</span>
+                        <span class="text-[10px] text-slate-400 font-mono">Min 8 chars (Upper, Lower, Number, Special)</span>
                     </div>
                     <div class="relative rounded-lg shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -383,7 +383,7 @@
                         <input :type="showConfirm ? 'text' : 'password'" x-model="confirmPassword" required
                                placeholder="Confirm new password"
                                class="w-full pl-9 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-                               :class="{ 'border-rose-400 dark:border-rose-600 focus:ring-rose-500': confirmPassword && newPassword !== confirmPassword }">
+                                :class="{ 'border-rose-400 dark:border-rose-600 focus:ring-rose-500': confirmPassword && newPassword !== confirmPassword }">
                         <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                             <i :data-lucide="showConfirm ? 'eye-off' : 'eye'" class="w-4 h-4"></i>
                         </button>
@@ -452,8 +452,16 @@
                     this.errorMsg = 'Please enter a new password.';
                     return;
                 }
-                if (this.newPassword.length < 4) {
-                    this.errorMsg = 'New password must be at least 4 characters long.';
+                if (this.newPassword.length < 8) {
+                    this.errorMsg = 'New password must be at least 8 characters long.';
+                    return;
+                }
+                const hasUpper = /[A-Z]/.test(this.newPassword);
+                const hasLower = /[a-z]/.test(this.newPassword);
+                const hasNum = /[0-9]/.test(this.newPassword);
+                const hasSpecial = /[^A-Za-z0-9]/.test(this.newPassword);
+                if (!hasUpper || !hasLower || !hasNum || !hasSpecial) {
+                    this.errorMsg = 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.';
                     return;
                 }
                 if (this.newPassword !== this.confirmPassword) {

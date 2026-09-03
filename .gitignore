@@ -18,3 +18,7 @@ backups/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+file
+

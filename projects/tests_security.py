@@ -16,27 +16,58 @@ from projects.services.security_service import create_secure_user, rotate_user_p
 
 class NISTPasswordPolicyCompositionTests(TestCase):
     """
-    Verifies NIST SP 800-63B Password Policy and Composition Rules:
-    - Minimum length: >= 12 characters
-    - Support for passphrases up to at least 64 characters without truncation
+    Verifies Password Policy and Composition Rules:
+    - Minimum length: >= 8 characters
+    - At least one uppercase letter (A-Z)
+    - At least one lowercase letter (a-z)
+    - At least one number (0-9)
+    - At least one special character (!@#$%^&* etc.)
+    - Support for passphrases up to at least 64-128 characters without truncation
     - Acceptance of all printable ASCII, spaces, and UTF-8 / emojis
-    - Explicit absence of arbitrary complexity rules (no mandatory uppercase, numbers, or symbols)
     """
 
     def setUp(self):
         self.user = User(username='jdoe_dev', email='jdoe@example.com')
 
     def test_minimum_length_enforcement(self):
-        """Passwords < 12 characters must be rejected."""
-        short_passwords = ['Short1!', 'Pass#12345', 'Abcdefghijk']
+        """Passwords < 8 characters must be rejected."""
+        short_passwords = ['Sh1!', 'Pass#1', 'Abc1!']
         for pwd in short_passwords:
             with self.assertRaises(ValidationError) as ctx:
                 validate_password(pwd, user=self.user)
-            self.assertTrue(any('at least 12 characters' in msg for msg in ctx.exception.messages))
+            self.assertTrue(any('at least 8 characters' in msg for msg in ctx.exception.messages))
+
+    def test_complexity_uppercase_required(self):
+        """Password missing uppercase letter must be rejected."""
+        with self.assertRaises(ValidationError) as ctx:
+            validate_password('lowercase#123', user=self.user)
+        self.assertTrue(any('uppercase letter' in msg for msg in ctx.exception.messages))
+
+    def test_complexity_lowercase_required(self):
+        """Password missing lowercase letter must be rejected."""
+        with self.assertRaises(ValidationError) as ctx:
+            validate_password('UPPERCASE#123', user=self.user)
+        self.assertTrue(any('lowercase letter' in msg for msg in ctx.exception.messages))
+
+    def test_complexity_number_required(self):
+        """Password missing number must be rejected."""
+        with self.assertRaises(ValidationError) as ctx:
+            validate_password('Uppercase#Secret', user=self.user)
+        self.assertTrue(any('number' in msg for msg in ctx.exception.messages))
+
+    def test_complexity_special_character_required(self):
+        """Password missing special character must be rejected."""
+        with self.assertRaises(ValidationError) as ctx:
+            validate_password('UppercaseNumber123', user=self.user)
+        self.assertTrue(any('special character' in msg for msg in ctx.exception.messages))
+
+    def test_valid_compliant_password(self):
+        """Compliant password meeting all criteria must be accepted."""
+        validate_password('Compliant#Pass123', user=self.user)
 
     def test_passphrase_length_and_no_truncation(self):
         """Passphrases up to at least 64 characters must be accepted without truncation."""
-        long_passphrase = "correct horse battery staple enterprise cloud scale secure token vault 2026"
+        long_passphrase = "Correct horse battery staple Enterprise cloud scale secure token vault 2026!"
         self.assertTrue(len(long_passphrase) >= 64)
         validate_password(long_passphrase, user=self.user)
 
@@ -45,13 +76,6 @@ class NISTPasswordPolicyCompositionTests(TestCase):
         unicode_passphrase = "🔐Secure#Passphrase#Vault🚀#2026#Access"
         validate_password(unicode_passphrase, user=self.user)
 
-    def test_no_arbitrary_complexity_anti_pattern(self):
-        """
-        NIST SP 800-63B strictly discourages forcing mixed-case, numbers, or symbols.
-        A long passphrase containing only lowercase letters and spaces must be valid.
-        """
-        pure_lowercase_passphrase = "whispering willow forest mountain stream"
-        validate_password(pure_lowercase_passphrase, user=self.user)
 
 
 class CredentialScreeningAndValidationTests(TestCase):
