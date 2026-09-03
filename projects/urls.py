@@ -26,6 +26,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('pending-approval/', views.pending_approval_view, name='pending_approval'),
+    path('change-password/', views.change_password_view, name='change_password'),
     path('logout/', views.logout_view, name='logout'),
     path('api/', include('projects.api.urls')),
 ]

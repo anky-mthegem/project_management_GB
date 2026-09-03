@@ -204,6 +204,8 @@ def org_chart_api(request):
             color = '#10b981' if has_team else '#94a3b8'  # Emerald / Slate
 
         manager_id = p.reporting_to_id if (p and p.reporting_to_id and p.reporting_to and p.reporting_to.username.lower() != 'aman') else (m.reporting_to_id if (m and m.reporting_to_id and m.reporting_to and m.reporting_to.username.lower() != 'aman') else None)
+        if role_code == RoleChoices.GENERAL_MANAGER:
+            manager_id = None
         is_lead = (tier_level <= 2) or bool(m and m.team and m.team.lead_id == u.id)
 
         nodes.append({
@@ -268,6 +270,9 @@ def update_reporting_api(request):
 
         # 3-Tier validation check
         user_prof, _ = UserProfile.objects.get_or_create(user=user)
+        if user_prof.role == RoleChoices.GENERAL_MANAGER and reporting_to_id:
+            return JsonResponse({'status': 'error', 'message': "General Managers serve at the apex of the hierarchy and need not assign any reporting manager."}, status=400)
+
         if manager:
             mgr_prof = getattr(manager, 'profile', None)
             if user_prof.role == RoleChoices.MANAGER and mgr_prof and mgr_prof.role != RoleChoices.GENERAL_MANAGER:

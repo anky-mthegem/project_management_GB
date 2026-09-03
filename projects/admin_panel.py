@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
 from django.core.management import call_command
+from django.utils.text import slugify
 
 from projects.models import (
     Project, ProjectMember, Task, ActivityLog, ProjectStatus, ProjectRole
@@ -241,7 +242,8 @@ def admin_create_department_view(request):
         return redirect('admin_panel')
 
     name = request.POST.get('name', '').strip()
-    code = request.POST.get('code', '').strip() or name.lower().replace(' ', '-')
+    raw_code = request.POST.get('code', '').strip() or name
+    code = slugify(raw_code)[:50] or 'dept'
     head_id = request.POST.get('head_id')
     parent_id = request.POST.get('parent_id')
 
@@ -276,7 +278,8 @@ def admin_create_team_view(request):
         return redirect('admin_panel')
 
     name = request.POST.get('name', '').strip()
-    code = request.POST.get('code', '').strip() or name.lower().replace(' ', '-')
+    raw_code = request.POST.get('code', '').strip() or name
+    code = slugify(raw_code)[:50] or 'team'
     department_id = request.POST.get('department_id')
     lead_id = request.POST.get('lead_id')
     description = request.POST.get('description', '').strip()

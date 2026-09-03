@@ -175,24 +175,67 @@
                     </a>
                     {% endif %}
 
-                    <!-- User Menu -->
-                    <div class="flex items-center space-x-2.5 pl-2.5 border-l border-slate-200 dark:border-slate-800">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-7 h-7 rounded-full bg-gradient-to-br {% if user.username == 'aman' %}from-amber-500 to-rose-600 ring-2 ring-amber-400/40{% else %}from-indigo-500 to-purple-600{% endif %} flex items-center justify-center text-xs font-bold text-white shadow-inner">
-                                {{ user.first_name|first|default:user.username|first|upper }}
-                            </div>
-                            <div class="hidden sm:flex flex-col text-left">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-tight">{{ user.get_full_name|default:user.username }}</span>
-                                    {% if user.username == 'aman' %}
-                                    <span class="px-1 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 text-[8px] font-bold border border-amber-300 dark:border-amber-500/30">MASTER</span>
-                                    {% endif %}
+                    <!-- User Menu & Account Settings Dropdown -->
+                    <div class="flex items-center space-x-1.5 pl-2.5 border-l border-slate-200 dark:border-slate-800"
+                         x-data="{ userMenuOpen: false }">
+                        <div class="relative">
+                            <button @click="userMenuOpen = !userMenuOpen"
+                                    @click.away="userMenuOpen = false"
+                                    class="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors focus:outline-none">
+                                <div class="w-7 h-7 rounded-full bg-gradient-to-br {% if user.username == 'aman' %}from-amber-500 to-rose-600 ring-2 ring-amber-400/40{% else %}from-indigo-500 to-purple-600{% endif %} flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                                    {{ user.first_name|first|default:user.username|first|upper }}
                                 </div>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">@{{ user.username }}</span>
+                                <div class="hidden sm:flex flex-col text-left">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-tight">{{ user.get_full_name|default:user.username }}</span>
+                                        {% if user.username == 'aman' %}
+                                        <span class="px-1 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 text-[8px] font-bold border border-amber-300 dark:border-amber-500/30">MASTER</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">@{{ user.username }}</span>
+                                </div>
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="userMenuOpen" x-cloak
+                                 class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 text-xs divide-y divide-slate-100 dark:divide-slate-800">
+                                <div class="px-3.5 py-2">
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">@{{ user.username }}</p>
+                                </div>
+                                <div class="py-1">
+                                    <button type="button"
+                                            @click="userMenuOpen = false; window.dispatchEvent(new CustomEvent('open-password-modal'))"
+                                            class="w-full flex items-center gap-2.5 px-3.5 py-2 text-slate-700 dark:text-slate-300 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400 transition-colors text-left font-medium">
+                                        <i data-lucide="key-round" class="w-4 h-4 text-brand-500"></i>
+                                        <span>Change Password</span>
+                                    </button>
+                                    <a href="{% url 'change_password' %}"
+                                       class="w-full flex items-center gap-2.5 px-3.5 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-[11px]">
+                                        <i data-lucide="shield" class="w-4 h-4 text-slate-400"></i>
+                                        <span>Security Settings Page</span>
+                                    </a>
+                                </div>
+                                <div class="py-1">
+                                    <a href="{% url 'logout' %}"
+                                       class="w-full flex items-center gap-2.5 px-3.5 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                                        <span>Sign Out</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
-                        <a href="{% url 'logout' %}" title="Logout" class="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-800 transition-colors">
+                        <!-- Quick Action: Change Password Icon -->
+                        <button type="button"
+                                @click="window.dispatchEvent(new CustomEvent('open-password-modal'))"
+                                title="Change Password"
+                                class="p-1.5 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-800 transition-colors">
+                            <i data-lucide="key-round" class="w-4 h-4"></i>
+                        </button>
+
+                        <a href="{% url 'logout' %}" title="Logout" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-800 transition-colors">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                         </a>
                     </div>
@@ -252,6 +295,209 @@
         });
     </script>
     
+    {% if user.is_authenticated %}
+    <!-- Global Change Password Modal (Accessible across entire app) -->
+    <div x-data="changePasswordModal()"
+         @open-password-modal.window="openModal()"
+         x-show="isOpen"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="closeModal()"
+             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800/60 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-sm">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Change Password</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Account: @{{ user.username }}</p>
+                    </div>
+                </div>
+                <button @click="closeModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Error Notification Alert -->
+            <div x-show="errorMsg" x-cloak
+                 class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                <span x-text="errorMsg" class="flex-1 font-medium"></span>
+            </div>
+
+            <!-- Success Notification Alert -->
+            <div x-show="successMsg" x-cloak
+                 class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                <span x-text="successMsg" class="flex-1 font-medium"></span>
+            </div>
+
+            <form @submit.prevent="submitPasswordChange()" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Current Password <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                        </div>
+                        <input :type="showOld ? 'text' : 'password'" x-model="oldPassword" required
+                               placeholder="Enter current password"
+                               class="w-full pl-9 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="button" @click="showOld = !showOld" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            <i :data-lucide="showOld ? 'eye-off' : 'eye'" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                            New Password <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[10px] text-slate-400 font-mono">Min 4 chars</span>
+                    </div>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <input :type="showNew ? 'text' : 'password'" x-model="newPassword" required
+                               placeholder="Enter new password"
+                               class="w-full pl-9 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="button" @click="showNew = !showNew" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            <i :data-lucide="showNew ? 'eye-off' : 'eye'" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Confirm New Password <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </div>
+                        <input :type="showConfirm ? 'text' : 'password'" x-model="confirmPassword" required
+                               placeholder="Confirm new password"
+                               class="w-full pl-9 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                               :class="{ 'border-rose-400 dark:border-rose-600 focus:ring-rose-500': confirmPassword && newPassword !== confirmPassword }">
+                        <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            <i :data-lucide="showConfirm ? 'eye-off' : 'eye'" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p x-show="confirmPassword && newPassword !== confirmPassword" x-cloak
+                       class="text-[11px] text-rose-500 mt-1">Passwords do not match.</p>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" @click="closeModal()"
+                            class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            :disabled="loading || !oldPassword || !newPassword || newPassword !== confirmPassword"
+                            class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-md shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5">
+                        <span x-show="!loading" class="flex items-center gap-1.5">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            <span>Update Password</span>
+                        </span>
+                        <span x-show="loading" x-cloak class="flex items-center gap-1.5">
+                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                            <span>Saving...</span>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function changePasswordModal() {
+        return {
+            isOpen: false,
+            loading: false,
+            errorMsg: '',
+            successMsg: '',
+            showOld: false,
+            showNew: false,
+            showConfirm: false,
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+            openModal() {
+                this.isOpen = true;
+                this.errorMsg = '';
+                this.successMsg = '';
+                this.oldPassword = '';
+                this.newPassword = '';
+                this.confirmPassword = '';
+                this.$nextTick(() => {
+                    if (window.lucide) window.lucide.createIcons();
+                });
+            },
+            closeModal() {
+                this.isOpen = false;
+            },
+            async submitPasswordChange() {
+                this.errorMsg = '';
+                this.successMsg = '';
+                if (!this.oldPassword) {
+                    this.errorMsg = 'Please enter your current password.';
+                    return;
+                }
+                if (!this.newPassword) {
+                    this.errorMsg = 'Please enter a new password.';
+                    return;
+                }
+                if (this.newPassword.length < 4) {
+                    this.errorMsg = 'New password must be at least 4 characters long.';
+                    return;
+                }
+                if (this.newPassword !== this.confirmPassword) {
+                    this.errorMsg = 'New password and confirmation do not match.';
+                    return;
+                }
+                this.loading = true;
+                try {
+                    const response = await fetch('{% url "change_password" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            old_password: this.oldPassword,
+                            new_password1: this.newPassword,
+                            new_password2: this.confirmPassword
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.status === 'success') {
+                        this.successMsg = data.message || 'Password changed successfully!';
+                        setTimeout(() => {
+                            this.closeModal();
+                        }, 1200);
+                    } else {
+                        this.errorMsg = data.message || 'Failed to update password. Please check your current password.';
+                    }
+                } catch (err) {
+                    this.errorMsg = 'A network or server error occurred. Please try again.';
+                } finally {
+                    this.loading = false;
+                    this.$nextTick(() => {
+                        if (window.lucide) window.lucide.createIcons();
+                    });
+                }
+            }
+        };
+    }
+    </script>
+    {% endif %}
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

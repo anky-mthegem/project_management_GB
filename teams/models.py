@@ -56,7 +56,6 @@ class Department(models.Model):
             raise ValidationError({'head': "Master administrator 'aman' cannot be assigned as a department head."})
 
     def save(self, *args, **kwargs):
-        self.full_clean()
         if not self.code:
             base = slugify(self.name)[:50] or 'dept'
             cand = base
@@ -65,6 +64,9 @@ class Department(models.Model):
                 cand = f"{base}-{i}"
                 i += 1
             self.code = cand
+        else:
+            self.code = slugify(self.code)[:50] or 'dept'
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @property
@@ -117,7 +119,6 @@ class Team(models.Model):
             raise ValidationError({'lead': "Master administrator 'aman' cannot be assigned as a team lead."})
 
     def save(self, *args, **kwargs):
-        self.full_clean()
         if not self.code:
             base = slugify(self.name)[:50] or 'team'
             cand = base
@@ -126,6 +127,9 @@ class Team(models.Model):
                 cand = f"{base}-{i}"
                 i += 1
             self.code = cand
+        else:
+            self.code = slugify(self.code)[:50] or 'team'
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @property
@@ -212,10 +216,10 @@ class UserProfile(models.Model):
                         raise ValidationError({'reporting_to': f"Managers must report directly to a General Manager (GM), not {rep_prof.get_role_display()}."})
 
             elif self.role == RoleChoices.GENERAL_MANAGER:
-                if self.reporting_to_id:
-                    rep_prof = UserProfile.objects.filter(user_id=self.reporting_to_id).first()
-                    if rep_prof and rep_prof.role != RoleChoices.GENERAL_MANAGER:
-                        raise ValidationError({'reporting_to': f"General Managers can only report to another General Manager (GM), not {rep_prof.get_role_display()}."})
+                # General Manager need not to assign any reporting manager
+                if self.reporting_to is not None:
+                    self.reporting_to = None
+                    self.reporting_to_id = None
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -276,6 +280,9 @@ class TeamMembership(models.Model):
             raise ValidationError({'user': "Master administrator 'aman' cannot be added as a team member."})
         if self.reporting_to and self.reporting_to.username.lower() == 'aman':
             raise ValidationError({'reporting_to': "Master administrator 'aman' cannot be set as a reporting manager."})
+        if self.role == 'GM' and self.reporting_to is not None:
+            self.reporting_to = None
+            self.reporting_to_id = None
         if self.user_id and self.reporting_to_id and self.user_id == self.reporting_to_id:
             raise ValidationError({'reporting_to': "A team member cannot report to themselves."})
 

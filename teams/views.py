@@ -175,6 +175,8 @@ def team_member_add_view(request, pk):
         return redirect('teams:team_detail', pk=team.pk)
 
     reporting_to = User.objects.filter(pk=reporting_to_id).exclude(username__iexact='aman').first() if reporting_to_id else None
+    if role == 'GM':
+        reporting_to = None
 
     membership, created = TeamMembership.objects.get_or_create(
         team=team,

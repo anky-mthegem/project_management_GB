@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Python 3.14 Django Compatibility Patch
 import gantt_app.py314_compat  # noqa
@@ -25,12 +26,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # Third party
+    # Security & Third party
+    'axes',
     'rest_framework',
     
     # Local apps
     'projects.apps.ProjectsConfig',
     'teams.apps.TeamsConfig',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'projects.validators.RobustAxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 MIDDLEWARE = [
@@ -41,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'gantt_app.urls'
@@ -79,24 +87,67 @@ if os.environ.get('DATABASE_URL'):
     env = environ.Env()
     DATABASES['default'] = env.db('DATABASE_URL')
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+# Password Hashers (Argon2id as default, followed by PBKDF2, BCrypt, Scrypt fallbacks)
+# https://docs.djangoproject.com/en/5.1/topics/auth/passwords/#using-argon2-with-django
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.ScryptPasswordHasher',
+]
 
+# Password validation (NIST SP 800-63B standard, Master Admin 'aman' exempted)
+# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'projects.validators.EnterpriseUserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {'min_length': 4},
+        'NAME': 'projects.validators.ContextSpecificWordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'projects.validators.EnterpriseMinimumLengthValidator',
+        'OPTIONS': {'min_length': 12, 'max_length': 128},
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'projects.validators.EnterpriseCommonPasswordValidator',
+    },
+    {
+        'NAME': 'projects.validators.EnterpriseNumericPasswordValidator',
+    },
+    {
+        'NAME': 'projects.validators.PwnedPasswordValidator',
+        'OPTIONS': {'threshold': 1, 'timeout': 2.0, 'fail_open': True},
     },
 ]
+
+# Brute-Force & Credential Stuffing Defense (django-axes)
+# https://django-axes.readthedocs.io/
+AXES_FAILURE_LIMIT = 5                      # Lockout threshold: 5 failed attempts
+AXES_COOLOFF_TIME = timedelta(hours=1)       # 1-hour cool-off lockout period
+AXES_RESET_ON_SUCCESS = True                # Reset failure counter upon successful login
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+AXES_WHITELIST_USERS = ['aman']             # Master admin emergency exemption
+AXES_VERBOSE = False
+
+# Transport & Cookie Security (NIST & OWASP ASVS Compliant)
+# https://docs.djangoproject.com/en/5.1/ref/settings/#security
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False               # False permits CSRF token retrieval for JavaScript
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Enforced in production (DEBUG=False)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
 
 # Internationalization (Indian Standard)
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

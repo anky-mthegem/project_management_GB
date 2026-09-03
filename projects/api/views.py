@@ -463,7 +463,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
 class TaskDependencyViewSet(viewsets.ModelViewSet):
-    queryset = TaskDependency.objects.all().select_related('from_task', 'to_task')
+    queryset = TaskDependency.objects.all().select_related('from_task', 'to_task').order_by('id')
     serializer_class = TaskDependencySerializer
     permission_classes = [permissions.IsAuthenticated]
 

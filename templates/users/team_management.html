@@ -626,9 +626,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Reporting Manager</label>
-                        <select name="reporting_to_id" x-model="selectedUser.reporting_to_id"
-                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <span>Reporting Manager</span>
+                            <span class="text-[10px] text-slate-400 font-normal" x-text="selectedUser.role_code === 'GM' ? '(Not Required for GM)' : ''"></span>
+                        </label>
+                        <select name="reporting_to_id" x-model="selectedUser.reporting_to_id" :disabled="selectedUser.role_code === 'GM'"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                             <option value="">-- Reports to None / Top Level --</option>
                             {% for m in potential_managers %}
                             <option value="{{ m.id }}" x-show="selectedUser.id != {{ m.id }}">
@@ -868,9 +871,12 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Reporting Manager</label>
-                            <select name="reporting_to_id" x-model="selectedUser.reporting_to_id"
-                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Reporting Manager</span>
+                                <span class="text-[10px] text-slate-400 font-normal" x-text="selectedUser.role_code === 'GM' ? '(Not Required for GM)' : ''"></span>
+                            </label>
+                            <select name="reporting_to_id" x-model="selectedUser.reporting_to_id" :disabled="selectedUser.role_code === 'GM'"
+                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                                 <option value="">-- Direct / None --</option>
                                 {% for m in potential_managers %}
                                 <option value="{{ m.id }}" x-show="selectedUser.id != {{ m.id }}">

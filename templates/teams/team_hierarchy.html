@@ -311,8 +311,8 @@
                                     <div class="flex-1 min-w-0 text-left">
                                         <div class="flex items-center justify-between gap-1">
                                             <h3 class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="root.name"></h3>
-                                            <span class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
-                                                LEAD
+                                            <span class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0"
+                                                  x-text="root.role_code === 'GM' ? 'EXECUTIVE GM' : (root.tier_badge || 'LEAD')">
                                             </span>
                                         </div>
                                         <p class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 mt-0.5 truncate" x-text="root.role"></p>
@@ -328,7 +328,8 @@
                                     </span>
 
                                     <div class="flex items-center gap-1">
-                                        <button @click.stop="openReportingModal(root)" title="Change Reporting Line" class="p-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <button x-show="root.role_code !== 'GM' && root.tier_level !== 1"
+                                                @click.stop="openReportingModal(root)" title="Change Reporting Line" class="p-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800">
                                             <i data-lucide="user-cog" class="w-3.5 h-3.5"></i>
                                         </button>
                                         <button x-show="root.children && root.children.length > 0"
@@ -490,11 +491,11 @@
                         <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/70 dark:border-slate-800/80 flex items-center justify-between text-xs">
                             <div class="flex items-center gap-2">
                                 <div class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-200 dark:bg-brand-600/20 dark:text-brand-400 dark:border-brand-500/30 flex items-center justify-center font-bold text-xs">
-                                    {{ t.lead.first_name|first|default:t.lead.username|first|upper }}
+                                    {% if t.lead %}{{ t.lead.first_name|first|default:t.lead.username|first|upper }}{% else %}?{% endif %}
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-slate-500 font-semibold uppercase">Team Lead</p>
-                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ t.lead.get_full_name|default:t.lead.username|default:"Unassigned" }}</p>
+                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">{% if t.lead %}{{ t.lead.get_full_name|default:t.lead.username }}{% else %}Unassigned{% endif %}</p>
                                 </div>
                             </div>
                             <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">{{ t.members_count }} Members</span>

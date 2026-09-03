@@ -103,7 +103,9 @@ window.teamManagerApp = function() {
                     children: [],
                     _matchesSearch: this.isNodeMatchingSearch(node)
                 };
-                if (!node.has_team && !node.parent_id) {
+                // General Managers are top-level executive roots and need not assign any reporting manager; they are never unassigned personnel
+                const isGeneralManager = (node.role_code === 'GM' || node.tier_level === 1);
+                if (!node.has_team && !node.parent_id && !isGeneralManager) {
                     unassigned.push(nodeMap[node.id]);
                 }
             });
@@ -114,7 +116,7 @@ window.teamManagerApp = function() {
                 const current = nodeMap[node.id];
                 if (node.parent_id && nodeMap[node.parent_id]) {
                     nodeMap[node.parent_id].children.push(current);
-                } else if (node.has_team || node.tier_level <= 2) {
+                } else if (node.has_team || node.tier_level <= 2 || node.role_code === 'GM') {
                     roots.push(current);
                 }
             });
@@ -157,11 +159,11 @@ window.teamManagerApp = function() {
         },
 
         collapseAll() {
-            const allIds = {};
+            const map = {};
             this.orgChartNodes.forEach(n => {
-                if (n.direct_reports_count > 0) allIds[n.id] = true;
+                map[n.id] = true;
             });
-            this.collapsedNodes = allIds;
+            this.collapsedNodes = map;
             this.$nextTick(() => {
                 if (window.lucide) lucide.createIcons();
             });
@@ -180,6 +182,10 @@ window.teamManagerApp = function() {
         },
 
         openReportingModal(node) {
+            if (node.role_code === 'GM' || node.tier_level === 1) {
+                this.showToast("General Managers are top executive roots and need not assign any reporting manager.", "info");
+                return;
+            }
             this.reportingForm = {
                 user_id: node.id,
                 user_name: node.name,
@@ -191,15 +197,17 @@ window.teamManagerApp = function() {
         },
 
         getValidManagersForRole(roleCode, targetUserId) {
-            if (roleCode === 'MGR') {
+            if (roleCode === 'GM') {
+                // General Managers need not to assign any reporting manager
+                return [];
+            } else if (roleCode === 'MGR') {
                 // Managers can only report to GMs
                 return this.orgChartNodes.filter(n => n.id !== targetUserId && n.role_code === 'GM');
             } else if (roleCode === 'TM') {
                 // Team Members report to Managers (or GMs)
                 return this.orgChartNodes.filter(n => n.id !== targetUserId && (n.role_code === 'MGR' || n.role_code === 'GM'));
             } else {
-                // GMs report to other GMs or None
-                return this.orgChartNodes.filter(n => n.id !== targetUserId && n.role_code === 'GM');
+                return [];
             }
         },
 

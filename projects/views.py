@@ -1,6 +1,7 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -105,6 +106,62 @@ def logout_view(request):
 
 
 @login_required
+def change_password_view(request):
+    """Allows authenticated users to securely change their own password from the app."""
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        request.content_type == 'application/json' or
+        request.POST.get('format') == 'json' or
+        'application/json' in request.headers.get('accept', '')
+    )
+
+    if request.method == 'POST':
+        data = request.POST.copy()
+        if request.content_type == 'application/json':
+            try:
+                body_data = json.loads(request.body)
+                data = body_data
+            except Exception:
+                data = {}
+
+        # Handle alias key variations
+        if 'new_password' in data and 'new_password1' not in data:
+            data['new_password1'] = data['new_password']
+        if 'confirm_password' in data and 'new_password2' not in data:
+            data['new_password2'] = data['confirm_password']
+        if 'current_password' in data and 'old_password' not in data:
+            data['old_password'] = data['current_password']
+
+        form = PasswordChangeForm(user=request.user, data=data)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            success_msg = "Your password has been changed successfully!"
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': success_msg})
+            messages.success(request, success_msg)
+            next_url = request.POST.get('next') or request.GET.get('next') or 'dashboard'
+            return redirect(next_url)
+        else:
+            errors = []
+            for field, err_list in form.errors.items():
+                for err in err_list:
+                    errors.append(str(err))
+            error_msg = " ".join(errors) if errors else "Password change failed. Please check your inputs."
+            if is_ajax:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': error_msg,
+                    'errors': form.errors.get_json_data()
+                }, status=400)
+            messages.error(request, error_msg)
+            return render(request, 'auth/change_password.html', {'form': form})
+    else:
+        form = PasswordChangeForm(user=request.user)
+        return render(request, 'auth/change_password.html', {'form': form})
+
+
+@login_required
 def dashboard_view(request):
     projects = Project.objects.all().select_related('owner').prefetch_related('tasks').order_by('-updated_at')
     
@@ -126,6 +183,7 @@ def dashboard_view(request):
         'completed_projects': completed_projects,
         'my_tasks': my_tasks,
         'all_users': all_users,
+        'project_statuses': ProjectStatus.choices,
         'statuses': ProjectStatus.choices
     }
     return render(request, 'projects/dashboard.html', context)
@@ -137,9 +195,11 @@ def project_gantt_view(request, code):
     
     # Exclude master admin aman from task assignees
     all_users = User.objects.filter(is_active=True).exclude(username__iexact='aman').order_by('first_name', 'username')
+    all_projects = Project.objects.all().order_by('name')
     
     context = {
         'project': project,
+        'all_projects': all_projects,
         'all_users': all_users,
         'statuses': TaskStatus.choices,
         'priorities': TaskPriority.choices,
@@ -156,6 +216,11 @@ def create_project_view(request):
     budget = request.POST.get('budget', '0')
     start_date = request.POST.get('start_date') or date.today().isoformat()
     end_date = request.POST.get('end_date') or date.today().isoformat()
+    status = request.POST.get('status', '').strip() or ProjectStatus.PLANNING
+
+    valid_statuses = dict(ProjectStatus.choices)
+    if status not in valid_statuses:
+        status = ProjectStatus.PLANNING
 
     if not name:
         messages.error(request, "Project name is required.")
@@ -171,14 +236,15 @@ def create_project_view(request):
             start_date=start_date,
             end_date=end_date,
             owner=owner,
-            status=ProjectStatus.PLANNING
+            status=status
         )
 
-        ProjectMember.objects.get_or_create(
-            project=project,
-            user=owner,
-            defaults={'role': ProjectRole.ADMIN}
-        )
+        if owner.username.lower() != 'aman':
+            ProjectMember.objects.get_or_create(
+                project=project,
+                user=owner,
+                defaults={'role': ProjectRole.ADMIN}
+            )
 
     messages.success(request, f"Project '{project.name}' created successfully!")
     return redirect('project_gantt', code=project.code)
@@ -350,7 +416,7 @@ def create_team_user_view(request):
             team = Team.objects.filter(id=team_id).first()
             if team:
                 reporting_user = None
-                if reporting_to_id:
+                if role not in ('GM', 'General Manager') and reporting_to_id:
                     reporting_user = User.objects.filter(id=reporting_to_id).exclude(username__iexact='aman').first()
                 
                 TeamMembership.objects.create(
@@ -400,7 +466,7 @@ def approve_team_user_view(request, user_id):
 
         dept = Department.objects.filter(id=department_id).first() if department_id else None
         reporting_user = None
-        if reporting_to_id:
+        if role_choice != RoleChoices.GENERAL_MANAGER and reporting_to_id:
             reporting_user = User.objects.filter(id=reporting_to_id).exclude(username__iexact='aman').exclude(id=user.id).first()
 
         # Update UserProfile (3-Tier Authority Source)
@@ -536,7 +602,7 @@ def edit_team_user_view(request, user_id):
 
         dept = Department.objects.filter(id=department_id).first() if department_id else None
         reporting_user = None
-        if reporting_to_id:
+        if role_choice != RoleChoices.GENERAL_MANAGER and reporting_to_id:
             reporting_user = User.objects.filter(id=reporting_to_id).exclude(username__iexact='aman').exclude(id=user.id).first()
 
         # Update UserProfile
